@@ -114,6 +114,10 @@ export function createEngine(game, hooks) {
   };
 
   const beginTurn = (actor, isPlayer) => {
+    if (actor.hand.length > 0) {
+      actor.discardPile.push(...actor.hand.map((card) => card.id));
+      actor.hand = [];
+    }
     actor.block = 0;
     actor.energy = MAX_ENERGY + (isPlayer ? 0 : (actor.extraEnergyPerTurn || 0));
     actor.turnFamilyCounts = {};
