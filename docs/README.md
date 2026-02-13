@@ -1,23 +1,15 @@
-# Synergy Turn Card Battle v0.7 문서
+# Synergy Turn Card Battle v1.1 문서
 
 ## 게임 소개
-v0.7은 **적 의도 대응 전투 + 덱 정리 + 카드 도감 정보 루프**를 포함한 런형 카드 배틀입니다.
-스펙 변경 루프(버전 업)를 통해 카드 풀/효과/보상 단계를 동시에 확장했습니다.
+v1.1은 카드 100장 전투에 **분기 경로 선택**, **지역/적 대규모 확장**, **10라운드 장기 런**을 결합한 버전입니다.
 
 ## 핵심 요소
-- 상태 머신: `ready -> planning -> playerTurn -> enemyTurn -> resolution -> deckBuild`
-- 카드 풀 31장 (C027~C031 신규)
-- 특이 효과: 체력 임계 추가타, 방어 전환 공격, 도감 기반 임시 획득
-- 보상 단계: 카드 선택/건너뛰기 + 불필요 카드 1장 제거
-- 카드 도감: 전체 카드 이미지/효과/설명 확인
+- 상태 머신: `ready -> planning -> playerTurn -> enemyTurn -> resolution -> deckBuild -> routeSelect`
+- 지역 6개 / 적 14종
+- 경로 분기 3선택 + 시작 모디파이어 4종
+- 카드 도감/적 도감/지역 도감
 
 ## 실행 방법
 1. `python3 -m http.server 8000`
 2. `http://localhost:8000`
 3. `런 시작`
-
-## 문서 인덱스
-- `docs/ARCHITECTURE.md`
-- `docs/CARD_DESIGN.md`
-- `docs/CHANGELOG.md`
-- `docs/DEVELOPER_GUIDE.md`

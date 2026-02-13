@@ -1,5 +1,5 @@
 import { SIGILS, STATES } from './constants.js';
-import { CARD_LIBRARY } from './data.js';
+import { CARD_LIBRARY, REGIONS, ENEMY_ARCHETYPES } from './data.js';
 
 const effectText = (effect) => {
   const map = {
@@ -65,6 +65,8 @@ export function createUiBindings() {
     finishDeckBuildBtn: document.querySelector('#finish-deck-build-btn'),
     openCodexBtn: document.querySelector('#open-codex-btn'),
     removeDeckCards: document.querySelector('#remove-deck-cards'),
+    routePanel: document.querySelector('#route-panel'),
+    routeChoices: document.querySelector('#route-choices'),
     playedCards: document.querySelector('#played-cards'),
     discoverPanel: document.querySelector('#discover-panel'),
     discoverCards: document.querySelector('#discover-cards'),
@@ -86,12 +88,12 @@ export function render(ui, game, actions) {
   ui.regionName.textContent = game.region;
   ui.roundInfo.textContent = `${Math.min(game.round + 1, game.totalRounds)} / ${game.totalRounds}`;
   ui.battleState.textContent = game.state;
-  ui.turnOwner.textContent = game.activeSide === 'player' ? '플레이어' : '적';
+  ui.turnOwner.textContent = game.state === STATES.ROUTE_SELECT ? '경로 선택' : (game.activeSide === 'player' ? '플레이어' : '적');
   ui.score.textContent = game.score;
   ui.playerDraw.textContent = game.player.drawPile.length;
   ui.playerDiscard.textContent = game.player.discardPile.length;
   ui.deckSize.textContent = game.deck.length;
-  ui.goalText.textContent = game.state === STATES.RUN_COMPLETE ? '목표 달성! 모든 지역 정복 완료' : '목표: 6라운드 클리어';
+  ui.goalText.textContent = game.state === STATES.RUN_COMPLETE ? '목표 달성! 모든 지역 정복 완료' : `목표: ${game.totalRounds}라운드 클리어`; 
   ui.endTurnBtn.disabled = game.state !== STATES.PLAYER_TURN;
 
   ui.hand.innerHTML = '';
@@ -151,6 +153,24 @@ export function render(ui, game, actions) {
   }
 
 
+
+  ui.routePanel.classList.toggle('hidden', game.state !== STATES.ROUTE_SELECT);
+  ui.routeChoices.innerHTML = '';
+  if (game.state === STATES.ROUTE_SELECT) {
+    game.routeChoices.forEach((route, index) => {
+      const node = document.createElement('article');
+      node.className = 'guide-item';
+      const regionName = REGIONS.find((r) => r.id === route.regionId)?.name || route.regionId;
+      const enemyName = ENEMY_ARCHETYPES[route.enemyId]?.name || route.enemyId;
+      node.innerHTML = `<h3>${index + 1}. ${regionName}</h3><p>다음 적: ${enemyName}</p><p class='small'>효과: ${route.modifier.name} - ${route.modifier.detail}</p>`;
+      const btn = document.createElement('button');
+      btn.className = 'play-btn';
+      btn.textContent = '이 경로로 이동';
+      btn.addEventListener('click', () => actions.selectRoute(index));
+      node.appendChild(btn);
+      ui.routeChoices.appendChild(node);
+    });
+  }
 
   ui.playedCards.innerHTML = '';
   if (!game.playedCardsHistory.length) {

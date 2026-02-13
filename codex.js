@@ -1,4 +1,4 @@
-import { CARD_LIBRARY, ENEMY_ARCHETYPES, ENEMY_BESTIARY, DECK_GUIDES } from './src/data.js';
+import { CARD_LIBRARY, REGIONS, ENEMY_ARCHETYPES, ENEMY_BESTIARY, DECK_GUIDES } from './src/data.js';
 
 const effectText = (effect) => {
   const map = {
@@ -56,6 +56,20 @@ Object.values(ENEMY_ARCHETYPES).forEach((enemy) => {
     <p class='small'>대응 팁: ${detail?.counter || '-'}</p>
   `;
   enemyWrap.appendChild(node);
+});
+
+
+
+const regionWrap = document.querySelector('#region-codex');
+REGIONS.forEach((region) => {
+  const node = document.createElement('article');
+  node.className = 'guide-item';
+  node.innerHTML = `
+    <h3>${region.name}</h3>
+    <p>티어: ${region.tier}</p>
+    <p class='small'>등장 적: ${region.enemies.map((id) => ENEMY_ARCHETYPES[id]?.name || id).join(', ')}</p>
+  `;
+  regionWrap.appendChild(node);
 });
 
 const guideWrap = document.querySelector('#deck-guides');
