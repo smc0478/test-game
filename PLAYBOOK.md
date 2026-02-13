@@ -74,7 +74,7 @@ QA Template
 Bug Fix Engineer Template
 
 루프:
-QA → Engineer Fix → QA 반복
+QA → Engineer Fix → 버그 재현 테스트 스크립트 작성/실행 → QA 반복
 
 ---
 
@@ -116,6 +116,12 @@ PR Writer Template
 QA → Engineer Fix → QA → (Docs 업데이트 선택)
 
 스펙 버전 증가 없음
+
+
+버그 수정 루프 필수 규칙:
+- 버그가 확인되면 `tests/bugs/`에 재현 스크립트를 먼저 추가한다.
+- 파일명은 `bug-keyword.test.mjs` 형식으로 작성한다.
+- 수정 전(실패) / 수정 후(성공) 실행 결과를 QA에 남긴다.
 
 ---
 
@@ -256,5 +262,7 @@ QA → Producer → Engineer → QA → Docs → PR
 
 운영 주기:
 - 매 배포 사이클마다 QA 결과를 기준으로 루프 분기 판단을 1회 이상 수행한다.
+
+- 매 배포 사이클마다 신규 버그가 보고되면 버그 수정 루프에 회귀 테스트 스크립트 단계를 강제한다.
 - 버그가 존재하면 버그 수정 루프를 우선 실행한다.
 - 대규모 변경 필요성이 확인되면 스펙 변경 루프(버전 업)로 전환한다.
