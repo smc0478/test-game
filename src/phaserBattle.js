@@ -1,6 +1,7 @@
 let hoverHooks = { onHover: null, onHoverOut: null };
 
 const safeRate = (value, max) => (max ? Math.max(0, Math.min(1, value / max)) : 0);
+const BATTLE_STAGE_HEIGHT = 440;
 
 const createFallbackBattle = (parent) => {
   if (parent) {
@@ -108,14 +109,14 @@ export function createPhaserBattle({ parent, onHover, onHoverOut }) {
     type: PhaserLib.AUTO,
     parent,
     width: 960,
-    height: 330,
+    height: BATTLE_STAGE_HEIGHT,
     backgroundColor: '#060b1f',
     scene: [BootScene, BattleScene],
     scale: {
       mode: PhaserLib.Scale.RESIZE,
       autoCenter: PhaserLib.Scale.CENTER_BOTH,
       width: '100%',
-      height: 330
+      height: BATTLE_STAGE_HEIGHT
     }
   });
 
