@@ -83,42 +83,104 @@ const BASE_CARD_LIBRARY = {
   C034: c('C034', '프리즘 잔상', 'prismBlade', 'attack', 2, 9, 'Gear', [{ kind: 'attack', value: 9 }], '공격 카드로 단순화되어 콤보 확장 성능이 줄었습니다.')
 };
 
-const generateExtraCards = () => {
+const buildConceptCards = () => {
   const concepts = [
-    { name: '난수 도박', family: 'chaos', type: 'skill', sigil: 'Flame', cost: 1, base: 0, effect: (t) => [{ kind: 'gamble', value: 1 }, { kind: 'draw', value: t % 2 }], desc: '랜덤 결과를 굴려 순간 고점을 노립니다.' },
-    { name: '리프 방진', family: 'leafFort', type: 'skill', sigil: 'Leaf', cost: 1, base: 7, effect: (t) => [{ kind: 'block', value: 7 + t }, { kind: 'ifEnemyIntent', intent: 'attack', then: [{ kind: 'thorns', value: 2 }] }], desc: '방어 중심 운영에서 효율이 높은 리프 코어입니다.' },
-    { name: '가시 반격', family: 'leafFort', type: 'attack', sigil: 'Leaf', cost: 2, base: 8, effect: (t) => [{ kind: 'convertBlockToDamage', value: 100 }, { kind: 'attack', value: 4 + t }], desc: '쌓은 방어도를 공격으로 전환하는 반격형 카드입니다.' },
-    { name: '기어 순환', family: 'gearTempo', type: 'skill', sigil: 'Gear', cost: 1, base: 0, effect: () => [{ kind: 'draw', value: 1 }], desc: '드로우 1장으로 템포를 보정합니다.' },
-    { name: '오버히트 절단', family: 'emberStrike', type: 'attack', sigil: 'Flame', cost: 1, base: 8, effect: (t) => [{ kind: 'attack', value: 8 + t }, { kind: 'ifEnemyHpBelow', value: 26, then: [{ kind: 'attack', value: 4 + t }] }], desc: '마무리 구간에서 피해가 크게 증가합니다.' },
-    { name: '공허 갈증', family: 'voidMark', type: 'attack', sigil: 'Void', cost: 1, base: 7, effect: (t) => [{ kind: 'attack', value: 7 + t }, { kind: 'drain', value: 2 + (t % 2) }], desc: '공격과 흡혈을 동시에 챙기는 안정형 공허 카드입니다.' },
-    { name: '의도 추적', family: 'prismFlow', type: 'attack', sigil: 'Void', cost: 1, base: 6, effect: (t) => [{ kind: 'attack', value: 6 + t }, { kind: 'ifEnemyIntent', intent: 'attack', then: [{ kind: 'vulnerable', value: 1 }, { kind: 'draw', value: 1 }] }], desc: '적 의도에 맞춰 추가 이득을 얻는 카운터 카드입니다.' },
-    { name: '시간 메아리', family: 'chrono', type: 'skill', sigil: 'Gear', cost: 1, base: 0, effect: () => [{ kind: 'rewind', value: 1 }], desc: '직전 카드 효과를 재발동하지만 비용이 추가됩니다.' }
+    { key: 'emberStrike', name: '연소 돌진', sigil: 'Flame' },
+    { key: 'leafGuard', name: '리프 방진', sigil: 'Leaf' },
+    { key: 'thornRiposte', name: '가시 반격', sigil: 'Leaf' },
+    { key: 'gearCycle', name: '기어 순환', sigil: 'Gear' },
+    { key: 'voidThirst', name: '공허 갈증', sigil: 'Void' },
+    { key: 'prismTracker', name: '의도 추적', sigil: 'Void' },
+    { key: 'chronoEcho', name: '시간 메아리', sigil: 'Gear' },
+    { key: 'chaosGamble', name: '난수 도박', sigil: 'Flame' },
+    { key: 'emberExecution', name: '오버히트 절단', sigil: 'Flame' },
+    { key: 'leafMend', name: '생장 회복', sigil: 'Leaf' },
+    { key: 'gearForge', name: '증기 주조', sigil: 'Gear' },
+    { key: 'voidBlade', name: '심연 칼날', sigil: 'Void' },
+    { key: 'barkCitadel', name: '수목 요새', sigil: 'Leaf' },
+    { key: 'sparkSniper', name: '아크 저격', sigil: 'Gear' },
+    { key: 'bloodFlame', name: '혈화 폭발', sigil: 'Flame' },
+    { key: 'mirrorPrism', name: '거울 프리즘', sigil: 'Void' },
+    { key: 'anchorGuard', name: '중력 고정', sigil: 'Leaf' },
+    { key: 'clockArchive', name: '시계 기록', sigil: 'Gear' },
+    { key: 'moonAbyss', name: '월광 심연', sigil: 'Void' },
+    { key: 'solarBloom', name: '태양 개화', sigil: 'Flame' }
   ];
 
+  const variants = [
+    {
+      suffix: '타격',
+      type: 'attack',
+      energyCost: 1,
+      baseValue: 8,
+      buildEffect: () => [{ kind: 'attack', value: 8 }, { kind: 'ifEnemyHpBelow', value: 30, then: [{ kind: 'attack', value: 3 }] }],
+      description: '안정적으로 피해를 누적하는 기본 공격 카드입니다.'
+    },
+    {
+      suffix: '전개',
+      type: 'skill',
+      energyCost: 1,
+      baseValue: 7,
+      buildEffect: () => [{ kind: 'block', value: 7 }, { kind: 'draw', value: 1 }],
+      description: '방어와 패 순환을 동시에 챙겨 다음 턴을 준비합니다.'
+    },
+    {
+      suffix: '절개',
+      type: 'attack',
+      energyCost: 2,
+      baseValue: 11,
+      buildEffect: () => [{ kind: 'attack', value: 11 }, { kind: 'ifEnemyIntent', intent: 'attack', then: [{ kind: 'vulnerable', value: 1 }] }],
+      description: '적 공격 의도를 읽어 취약을 부여하는 카운터 공격입니다.'
+    },
+    {
+      suffix: '파동',
+      type: 'skill',
+      energyCost: 1,
+      baseValue: 0,
+      buildEffect: () => [{ kind: 'gainEnergy', value: 1 }, { kind: 'ifLastTurnFamily', family: 'chronoEcho', then: [{ kind: 'draw', value: 1 }] }],
+      description: '에너지를 회수하고 직전 연계 조건을 만족하면 드로우를 얻습니다.'
+    },
+    {
+      suffix: '붕괴',
+      type: 'attack',
+      energyCost: 2,
+      baseValue: 9,
+      buildEffect: () => [{ kind: 'reduceBlock', value: 5 }, { kind: 'attack', value: 9 }, { kind: 'drain', value: 2 }],
+      description: '방어 감소 후 흡혈 타격으로 소모전을 유리하게 만듭니다.'
+    }
+  ];
+
+  const numericOnlyCardIds = new Set(['C003', 'C048', 'C099']);
   const generated = {};
-  for (let id = 35; id <= 168; id += 1) {
-    const concept = concepts[(id - 35) % concepts.length];
-    const tier = Math.floor((id - 35) / concepts.length);
-    const cardId = `C${String(id).padStart(3, '0')}`;
-    const rank = tier + 1;
-    generated[cardId] = c(
-      cardId,
-      `${concept.name} ${rank}`,
-      concept.family,
-      concept.type,
-      concept.cost,
-      concept.base + tier,
-      concept.sigil,
-      concept.effect(tier),
-      `${concept.desc} (확장 카드 ${cardId})`
-    );
-  }
+  concepts.forEach((concept, conceptIndex) => {
+    variants.forEach((variant, variantIndex) => {
+      const idNumber = conceptIndex * variants.length + variantIndex + 1;
+      const cardId = `C${String(idNumber).padStart(3, '0')}`;
+      let effect = variant.buildEffect(concept);
+      let description = `${concept.name} 컨셉의 핵심 카드입니다. ${variant.description}`;
+      if (numericOnlyCardIds.has(cardId)) {
+        effect = [{ kind: variant.type === 'attack' ? 'attack' : 'block', value: variant.baseValue }];
+        description = `${concept.name} 컨셉의 수치 전용 카드입니다. 추가 조건 없이 기본 수치만 적용됩니다.`;
+      }
+      generated[cardId] = c(
+        cardId,
+        `${concept.name} ${variant.suffix}`,
+        concept.key,
+        variant.type,
+        variant.energyCost,
+        variant.baseValue,
+        concept.sigil,
+        effect,
+        description
+      );
+    });
+  });
   return generated;
 };
 
 export const CARD_LIBRARY = {
   ...BASE_CARD_LIBRARY,
-  ...generateExtraCards()
+  ...buildConceptCards()
 };
 
 export const STARTER_DECK = ['C001', 'C003', 'C004', 'C006', 'C007', 'C008', 'C010', 'C012', 'C014', 'C015', 'C021', 'C023'];
@@ -158,7 +220,7 @@ export const ROUTE_MODIFIERS = [
   { id: 'exposed', name: '지형 우세', detail: '적 최대 HP -8', enemyHpDelta: -8 }
 ];
 
-export const ENEMY_ARCHETYPES = {
+const RAW_ENEMY_ARCHETYPES = {
   emberFox: { id: 'emberFox', name: '잿불 여우', hp: 52, deck: ['C001', 'C002', 'C014', 'C021', 'C017', 'C033'], image: enemyArt('잿불 여우', '🦊', '#fb923c', '#7c2d12') },
   ironShell: { id: 'ironShell', name: '철갑 딱정벌레', hp: 64, deck: ['C006', 'C007', 'C015', 'C016', 'C022', 'C029'], image: enemyArt('철갑 딱정벌레', '🪲', '#60a5fa', '#1e3a8a') },
   sandBandit: { id: 'sandBandit', name: '사막 약탈자', hp: 60, deck: ['C001', 'C004', 'C020', 'C024', 'C035', 'C044'], image: enemyArt('사막 약탈자', '🏜️', '#fbbf24', '#92400e') },
@@ -194,6 +256,21 @@ export const ENEMY_ARCHETYPES = {
   prismTracker: { id: 'prismTracker', name: '프리즘 추적자', hp: 96, deck: ['C042', 'C074', 'C106', 'C138', 'C106', 'C161'], image: enemyArt('프리즘 추적자', '🎯', '#c084fc', '#312e81') },
   chronoEcho: { id: 'chronoEcho', name: '시공 메아리', hp: 98, deck: ['C043', 'C075', 'C107', 'C139', 'C107', 'C162'], image: enemyArt('시공 메아리', '⏱️', '#67e8f9', '#1e3a8a') }
 };
+
+
+const normalizeCardId = (cardId) => {
+  if (CARD_LIBRARY[cardId]) return cardId;
+  const numeric = Number(cardId.slice(1));
+  const wrapped = ((numeric - 1) % 100) + 1;
+  return `C${String(wrapped).padStart(3, '0')}`;
+};
+
+export const ENEMY_ARCHETYPES = Object.fromEntries(
+  Object.entries(RAW_ENEMY_ARCHETYPES).map(([key, enemy]) => [
+    key,
+    { ...enemy, deck: enemy.deck.map(normalizeCardId) }
+  ])
+);
 
 export const ENEMY_BESTIARY = {
   emberFox: { title: '잿불 여우', concept: '화염 폭딜형', pattern: '공격 카드를 우선하지만 연계 드로우 카드로 손패를 늘립니다.', counter: '리프 방어 카드와 취약 대응으로 폭딜 타이밍을 넘기세요.' },
