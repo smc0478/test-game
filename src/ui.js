@@ -2,11 +2,11 @@ import { SIGILS, STATES } from './constants.js';
 import { CARD_LIBRARY, REGIONS, ENEMY_ARCHETYPES } from './data.js';
 
 const SYNERGY_GUIDE = [
-  { sigil: 'Flame', effect: '동일 문양 2회 이상 사용 시 공격 피해 +6' },
-  { sigil: 'Leaf', effect: '동일 문양 2회 이상 사용 시 방어 +6' },
+  { sigil: 'Flame', effect: '동일 문양 2회 이상 사용 시 공격 피해 +5' },
+  { sigil: 'Leaf', effect: '동일 문양 2회 이상 사용 시 방어 +7' },
   { sigil: 'Gear', effect: '동일 문양 2회 이상 사용 시 드로우 +1' },
-  { sigil: 'Void', effect: '동일 문양 2회 이상 사용 시 공격 +4 + 흡혈 2' },
-  { sigil: 'Burst', effect: '같은 문양 3회 사용 시 해당 문양 버스트 1회 발동 (+15점)' }
+  { sigil: 'Void', effect: '동일 문양 2회 이상 사용 시 공격 +3 + 흡혈 1' },
+  { sigil: 'Burst', effect: '같은 문양 4회 사용 시 해당 문양 버스트 1회 발동 (+15점)' }
 ];
 
 const effectText = (effect) => {
