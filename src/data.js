@@ -46,7 +46,24 @@ const enemyArt = (name, icon, colorA, colorB) => {
   return `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`;
 };
 
-const BASE_CARD_LIBRARY = {};
+const BASE_CARD_LIBRARY = {
+  C001: c('C001', '화염 타격', 'flame-core', 'attack', 1, 8, 'Flame', [{ kind: 'attack', value: 8 }], '적에게 피해 8을 준다.'),
+  C002: c('C002', '화염 장막', 'flame-core', 'skill', 1, 8, 'Flame', [{ kind: 'block', value: 8 }], '방어도 8을 얻는다.'),
+  C003: c('C003', '화염 통찰', 'flame-core', 'skill', 1, 2, 'Flame', [{ kind: 'draw', value: 2 }], '카드를 2장 뽑는다.'),
+  C004: c('C004', '화염 재생', 'flame-core', 'skill', 1, 5, 'Flame', [{ kind: 'heal', value: 5 }], '체력을 5 회복한다.'),
+  C005: c('C005', '잎새 타격', 'leaf-core', 'attack', 1, 8, 'Leaf', [{ kind: 'attack', value: 8 }], '적에게 피해 8을 준다.'),
+  C006: c('C006', '잎새 방벽', 'leaf-core', 'skill', 1, 8, 'Leaf', [{ kind: 'block', value: 8 }], '방어도 8을 얻는다.'),
+  C007: c('C007', '잎새 통찰', 'leaf-core', 'skill', 1, 2, 'Leaf', [{ kind: 'draw', value: 2 }], '카드를 2장 뽑는다.'),
+  C008: c('C008', '잎새 재생', 'leaf-core', 'skill', 1, 5, 'Leaf', [{ kind: 'heal', value: 5 }], '체력을 5 회복한다.'),
+  C009: c('C009', '기어 타격', 'gear-core', 'attack', 1, 8, 'Gear', [{ kind: 'attack', value: 8 }], '적에게 피해 8을 준다.'),
+  C010: c('C010', '기어 장막', 'gear-core', 'skill', 1, 8, 'Gear', [{ kind: 'block', value: 8 }], '방어도 8을 얻는다.'),
+  C011: c('C011', '기어 통찰', 'gear-core', 'skill', 1, 2, 'Gear', [{ kind: 'draw', value: 2 }], '카드를 2장 뽑는다.'),
+  C012: c('C012', '기어 재생', 'gear-core', 'skill', 1, 5, 'Gear', [{ kind: 'heal', value: 5 }], '체력을 5 회복한다.'),
+  C013: c('C013', '공허 타격', 'void-core', 'attack', 1, 8, 'Void', [{ kind: 'attack', value: 8 }], '적에게 피해 8을 준다.'),
+  C014: c('C014', '공허 장막', 'void-core', 'skill', 1, 8, 'Void', [{ kind: 'block', value: 8 }], '방어도 8을 얻는다.'),
+  C015: c('C015', '공허 통찰', 'void-core', 'skill', 1, 2, 'Void', [{ kind: 'draw', value: 2 }], '카드를 2장 뽑는다.'),
+  C016: c('C016', '공허 재생', 'void-core', 'skill', 1, 5, 'Void', [{ kind: 'heal', value: 5 }], '체력을 5 회복한다.')
+};
 
 const buildConceptCards = () => ({});
 
@@ -55,7 +72,7 @@ export const CARD_LIBRARY = {
   ...buildConceptCards()
 };
 
-export const STARTER_DECK = [];
+export const STARTER_DECK = ['C001', 'C002', 'C005', 'C006', 'C009', 'C010', 'C013', 'C014'];
 
 export const REGIONS = [
   { id: 'ashCanyon', name: '잿빛 협곡', tier: 1, enemies: ['emberFox', 'ironShell', 'sandBandit', 'cinderHound', 'chaosJuggler'] },
@@ -181,23 +198,23 @@ export const ENEMY_BESTIARY = {
 
 export const DECK_GUIDES = [
   {
-    title: '랜덤 폭발 컨셉 (카오스)',
-    coreCards: ['C033', 'C035', 'C043', 'C051'],
-    play: '기어 순환 카드로 손패를 보충하고 카이오스/난수 도박을 연속 사용해 고점을 노립니다.'
+    title: '화염 압박 컨셉',
+    coreCards: ['C001', 'C002', 'C003', 'C004'],
+    play: '화염 카드 2회 이상으로 공격 시너지를 빠르게 켜고, 회복 카드로 체력을 유지하세요.'
   },
   {
-    title: '리프 방어-반격 컨셉',
-    coreCards: ['C006', 'C016', 'C029', 'C037', 'C038'],
-    play: '방어도를 먼저 크게 쌓은 뒤 가시 반격/역전 톱니로 한 번에 피해를 전환합니다.'
+    title: '리프 방어 컨셉',
+    coreCards: ['C005', 'C006', 'C007', 'C008'],
+    play: '리프 카드를 연속 사용해 방어 시너지를 켜고 안정적으로 장기전을 운영하세요.'
   },
   {
-    title: '공허 카운터 컨셉',
-    coreCards: ['C026', 'C027', 'C039', 'C041', 'C045'],
-    play: '적 의도가 공격일 때 추가 이득을 챙기는 카드로 에너지/드로우를 벌어 효율적으로 굴립니다.'
+    title: '기어 순환 컨셉',
+    coreCards: ['C009', 'C010', 'C011', 'C012'],
+    play: '기어 드로우 카드로 손패 순환을 가속하고 필요한 역할 카드를 빠르게 찾으세요.'
   },
   {
-    title: '기어 템포 엔진 컨셉',
-    coreCards: ['C015', 'C031', 'C040', 'C042', 'C050'],
-    play: '드로우/되감기 카드로 손패 품질을 유지하면서 피니셔 각을 안정적으로 만듭니다.'
+    title: '공허 흡수 컨셉',
+    coreCards: ['C013', 'C014', 'C015', 'C016'],
+    play: '공허 시너지의 추가 피해/흡혈을 활용해 공격과 생존을 동시에 챙기세요.'
   }
 ];
