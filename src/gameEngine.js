@@ -19,7 +19,6 @@ function createActor({ name, hp, deckIds }) {
     intent: '준비', intentType: 'skill', lastPlayedCardId: null,
     archetypeId: null,
     threatLevel: 1,
-    extraActionBudget: 0,
     extraEnergyPerTurn: 0,
     extraDrawPerTurn: 0
   };
@@ -140,7 +139,6 @@ export function createEngine(game, hooks) {
       threatLevel: 1 + stage,
       extraEnergyPerTurn: stage,
       extraDrawPerTurn: game.round >= 5 ? 1 : 0,
-      extraActionBudget: game.round >= 2 ? Math.min(2, 1 + Math.floor((game.round - 2) / 4)) : 0
     };
   };
 
@@ -350,7 +348,6 @@ export function createEngine(game, hooks) {
     game.enemy.threatLevel = scaling.threatLevel;
     game.enemy.extraEnergyPerTurn = scaling.extraEnergyPerTurn;
     game.enemy.extraDrawPerTurn = scaling.extraDrawPerTurn;
-    game.enemy.extraActionBudget = scaling.extraActionBudget;
     game.rewardAccepted = false;
     game.removedInDeckBuild = false;
     beginTurn(game.player, true);
@@ -358,7 +355,7 @@ export function createEngine(game, hooks) {
     applyRouteModifier(route);
     game.state = STATES.PLANNING;
     chooseEnemyCard();
-    log(`난이도 단계 ${game.enemy.threatLevel}: 적 에너지 +${game.enemy.extraEnergyPerTurn}, 행동 +${1 + game.enemy.extraActionBudget}`);
+    log(`난이도 단계 ${game.enemy.threatLevel}: 적 에너지 +${game.enemy.extraEnergyPerTurn}, 행동 규칙=에너지 소진형`);
     game.state = STATES.PLAYER_TURN;
     game.activeSide = 'player';
     renderAndPersist();
@@ -459,7 +456,7 @@ export function createEngine(game, hooks) {
   const enemyTurn = () => {
     if (game.state !== STATES.ENEMY_TURN) return;
     let actionCount = 0;
-    const maxActions = 1 + (game.enemy.extraActionBudget || 0);
+    const maxActions = 12;
 
     while (actionCount < maxActions) {
       const card = chooseEnemyCard();
@@ -474,7 +471,7 @@ export function createEngine(game, hooks) {
       card.effect.forEach((effect) => applyEffect(game.enemy, game.player, effect, card));
       game.enemy.lastPlayedCardId = card.id;
       actionCount += 1;
-      log(`적 행동 ${actionCount}/${maxActions}: ${card.name}`);
+      log(`적 행동 ${actionCount}회: ${card.name} (남은 에너지 ${game.enemy.energy})`);
 
       if (game.player.hp <= 0 || game.enemy.hp <= 0) break;
     }
