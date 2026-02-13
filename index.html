@@ -3,20 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>시너지 턴 카드 배틀 v0.8</title>
+  <title>시너지 턴 카드 배틀 v1.2</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="app">
     <header class="top-bar">
       <div>
-        <h1>시너지 턴 카드 배틀 v0.8</h1>
-        <p class="subtitle">의도 대응 + 카드 추적 + 별도 도감 페이지를 포함한 러닝 모드</p>
+        <h1>시너지 턴 카드 배틀 v1.2</h1>
+        <p class="subtitle">시너지 가이드 + 저장/이어하기 + 명예의 전당을 포함한 서버리스 러닝 모드</p>
       </div>
       <div class="controls">
-        <button id="start-btn">런 시작</button>
+        <button id="start-btn">새 런 시작</button>
+        <button id="resume-btn">이어하기</button>
+        <button id="reset-save-btn">저장 초기화</button>
         <button id="end-turn-btn" disabled>턴 종료</button>
         <button id="open-codex-btn" type="button">도감 페이지</button>
+        <button id="open-hall-btn" type="button">명예의 전당</button>
       </div>
     </header>
 
@@ -49,6 +52,7 @@
     <section class="panel">
       <h2>시너지 / 목표</h2>
       <div id="synergy-info" class="badge-wrap"></div>
+      <div id="synergy-effects" class="deck-list"></div>
       <p id="goal-text" class="small">목표: 10라운드를 돌파하고 최종 보스를 처치하세요.</p>
     </section>
 

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>명예의 전당 | 시너지 턴 카드 배틀 v1.2</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="top-bar">
+      <div>
+        <h1>명예의 전당</h1>
+        <p class="subtitle">브라우저 localStorage 기반 기록 (서버 없이 GitHub Pages에서 동작)</p>
+      </div>
+      <div class="controls">
+        <a href="index.html"><button type="button">전투 화면</button></a>
+        <button id="clear-hall-btn" type="button">전당 기록 삭제</button>
+      </div>
+    </header>
+
+    <section class="panel">
+      <h2>누적 통계</h2>
+      <div id="hall-summary" class="deck-list"></div>
+    </section>
+
+    <section class="panel">
+      <h2>최근 런 기록</h2>
+      <div id="hall-list" class="deck-list"></div>
+    </section>
+  </main>
+
+  <script type="module" src="./hall.js"></script>
+</body>
+</html>

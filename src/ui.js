@@ -1,6 +1,14 @@
 import { SIGILS, STATES } from './constants.js';
 import { CARD_LIBRARY, REGIONS, ENEMY_ARCHETYPES } from './data.js';
 
+const SYNERGY_GUIDE = [
+  { sigil: 'Flame', effect: '동일 문양 2회 이상 사용 시 공격 피해 +6' },
+  { sigil: 'Leaf', effect: '동일 문양 2회 이상 사용 시 방어 +6' },
+  { sigil: 'Gear', effect: '동일 문양 2회 이상 사용 시 드로우 +1' },
+  { sigil: 'Void', effect: '동일 문양 2회 이상 사용 시 공격 +4 + 흡혈 2' },
+  { sigil: 'Burst', effect: '같은 문양 3회 사용 시 해당 문양 버스트 1회 발동 (+15점)' }
+];
+
 const effectText = (effect) => {
   const map = {
     attack: `공격 ${effect.value}`,
@@ -37,6 +45,8 @@ const cardTemplate = (card) => `<img class='card-art' src='${card.image}' alt='$
 export function createUiBindings() {
   return {
     startBtn: document.querySelector('#start-btn'),
+    resumeBtn: document.querySelector('#resume-btn'),
+    resetSaveBtn: document.querySelector('#reset-save-btn'),
     endTurnBtn: document.querySelector('#end-turn-btn'),
     playerHp: document.querySelector('#player-hp'),
     playerMaxHp: document.querySelector('#player-max-hp'),
@@ -54,6 +64,7 @@ export function createUiBindings() {
     turnOwner: document.querySelector('#turn-owner'),
     score: document.querySelector('#score'),
     synergyInfo: document.querySelector('#synergy-info'),
+    synergyEffects: document.querySelector('#synergy-effects'),
     goalText: document.querySelector('#goal-text'),
     hand: document.querySelector('#hand'),
     playerDraw: document.querySelector('#player-draw'),
@@ -64,6 +75,7 @@ export function createUiBindings() {
     skipRewardBtn: document.querySelector('#skip-reward-btn'),
     finishDeckBuildBtn: document.querySelector('#finish-deck-build-btn'),
     openCodexBtn: document.querySelector('#open-codex-btn'),
+    openHallBtn: document.querySelector('#open-hall-btn'),
     removeDeckCards: document.querySelector('#remove-deck-cards'),
     routePanel: document.querySelector('#route-panel'),
     routeChoices: document.querySelector('#route-choices'),
@@ -93,8 +105,9 @@ export function render(ui, game, actions) {
   ui.playerDraw.textContent = game.player.drawPile.length;
   ui.playerDiscard.textContent = game.player.discardPile.length;
   ui.deckSize.textContent = game.deck.length;
-  ui.goalText.textContent = game.state === STATES.RUN_COMPLETE ? '목표 달성! 모든 지역 정복 완료' : `목표: ${game.totalRounds}라운드 클리어`; 
+  ui.goalText.textContent = game.state === STATES.RUN_COMPLETE ? '목표 달성! 모든 지역 정복 완료' : `목표: ${game.totalRounds}라운드 클리어`;
   ui.endTurnBtn.disabled = game.state !== STATES.PLAYER_TURN;
+  ui.resumeBtn.disabled = !actions.hasSavedRun();
 
   ui.hand.innerHTML = '';
   game.player.hand.forEach((card, idx) => {
@@ -116,6 +129,14 @@ export function render(ui, game, actions) {
     d.className = 'synergy-badge';
     d.textContent = `${sigil}: ${game.player.sigilCounts[sigil]}`;
     ui.synergyInfo.appendChild(d);
+  });
+
+  ui.synergyEffects.innerHTML = '';
+  SYNERGY_GUIDE.forEach((guide) => {
+    const node = document.createElement('article');
+    node.className = 'guide-item';
+    node.innerHTML = `<h3>${guide.sigil}</h3><p class='small'>${guide.effect}</p>`;
+    ui.synergyEffects.appendChild(node);
   });
 
   ui.rewardPanel.classList.toggle('hidden', game.state !== STATES.DECK_BUILD);
@@ -152,8 +173,6 @@ export function render(ui, game, actions) {
     ui.finishDeckBuildBtn.disabled = !game.rewardAccepted;
   }
 
-
-
   ui.routePanel.classList.toggle('hidden', game.state !== STATES.ROUTE_SELECT);
   ui.routeChoices.innerHTML = '';
   if (game.state === STATES.ROUTE_SELECT) {
@@ -186,7 +205,6 @@ export function render(ui, game, actions) {
       ui.playedCards.appendChild(item);
     });
   }
-
 
   const discovering = game.discoverChoices.length > 0;
   ui.discoverPanel.classList.toggle('hidden', !discovering);
