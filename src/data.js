@@ -61,7 +61,7 @@ export const CARD_LIBRARY = {
   C029: c('C029', '역전 톱니', 'clockwork', 'skill', 2, 0, 'Gear', [{ kind: 'convertBlockToDamage', value: 100 }], '현재 방어도를 모두 소모해 같은 수치만큼 즉시 피해를 줍니다.'),
   C030: c('C030', '영점 폭발', 'voidRitual', 'attack', 2, 9, 'Flame', [{ kind: 'attack', value: 9 }, { kind: 'ifEnemyHpBelow', value: 22, then: [{ kind: 'attack', value: 10 }] }], '적 체력이 22 이하일 때 추가 폭발 피해를 가합니다.'),
   C031: c('C031', '아카이브 스캔', 'archive', 'skill', 1, 0, 'Gear', [{ kind: 'discover', value: 3 }], '카드 도감에서 임시 카드 1장을 선택해 손패에 추가합니다.'),
-  C032: c('C032', '시간 되감기', 'chrono', 'skill', 1, 0, 'Void', [{ kind: 'rewind', value: 1 }], '직전에 사용한 내 카드의 효과를 비용 없이 한 번 더 발동합니다.'),
+  C032: c('C032', '시간 되감기', 'chrono', 'skill', 0, 0, 'Void', [{ kind: 'rewind', value: 1 }], '직전에 사용한 내 카드의 효과를 비용 없이 한 번 더 발동합니다.'),
   C033: c('C033', '카이오스 잭팟', 'chaos', 'skill', 1, 0, 'Flame', [{ kind: 'gamble', value: 1 }], '무작위로 폭딜/방어/템포 보너스 중 하나를 얻습니다.'),
   C034: c('C034', '프리즘 잔상', 'prismBlade', 'attack', 2, 11, 'Gear', [{ kind: 'attack', value: 11 }, { kind: 'rewind', value: 1 }], '공격 후 직전 카드 효과를 이어붙여 콤보를 확장합니다.')
 };
