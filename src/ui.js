@@ -188,7 +188,10 @@ export function render(ui, game, actions) {
   ui.enemyEnergy.textContent = game.enemy?.energy || 0;
   ui.enemyIntent.textContent = game.enemy?.intent || '-';
   ui.enemyThreat.textContent = game.enemy?.threatLevel || 1;
-  ui.enemyActions.textContent = '에너지 소진형';
+  const intentDamage = game.enemy?.intentDamage;
+  ui.enemyActions.textContent = intentDamage === null || intentDamage === undefined
+    ? '에너지 소진형'
+    : `에너지 소진형 · 예상 공격 ${intentDamage}`;
   ui.playerStatus.textContent = statusSummary(game.player);
   ui.enemyStatus.textContent = statusSummary(game.enemy);
   ui.regionName.textContent = game.region;

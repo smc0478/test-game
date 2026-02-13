@@ -16,7 +16,7 @@ function createActor({ name, hp, deckIds }) {
     comboChain: 0, lastSigil: null, turnScoreMultiplier: false,
     adrenalineTriggered: false, prismBurstTriggered: false, momentumTriggered: false,
     sigilBurstTriggered: { Flame: false, Leaf: false, Gear: false, Void: false },
-    intent: '준비', intentType: 'skill', lastPlayedCardId: null,
+    intent: '준비', intentType: 'skill', intentDamage: null, lastPlayedCardId: null,
     archetypeId: null,
     threatLevel: 1,
     extraEnergyPerTurn: 0,
@@ -148,6 +148,42 @@ export function createEngine(game, hooks) {
     target.block -= blocked;
     target.hp = clamp(target.hp - real, 0, target.maxHp);
     return real;
+  };
+
+  const estimateIntentAttack = (source, target, card) => {
+    const attackBase = effectListAttack(card.effect, source, target, card);
+    if (attackBase === null) return null;
+    const buffBonus = source.attackBuff;
+    const flameBonus = source.activeSynergies.Flame ? 5 : 0;
+    const voidBonus = source.activeSynergies.Void ? 3 : 0;
+    const vulnerableBonus = target.vulnerable > 0 ? 2 : 0;
+    return Math.max(0, attackBase + buffBonus + flameBonus + voidBonus + vulnerableBonus);
+  };
+
+  const effectListAttack = (effects, source, target, card) => {
+    let total = 0;
+    for (const effect of effects) {
+      if (effect.kind === 'attack') total += effect.value;
+      if (effect.kind === 'convertBlockToDamage') total += source.block;
+      if (effect.kind === 'echoAttack' && (source.turnFamilyCounts?.[card.family] || 0) > 1) total += effect.value;
+      if (effect.kind === 'ifEnemyIntent' && target.intentType === effect.intent) {
+        const nested = effectListAttack(effect.then || [], source, target, card);
+        if (nested === null) return null;
+        total += nested;
+      }
+      if (effect.kind === 'ifEnemyHpBelow' && target.hp <= effect.value) {
+        const nested = effectListAttack(effect.then || [], source, target, card);
+        if (nested === null) return null;
+        total += nested;
+      }
+      if (effect.kind === 'ifLastTurnFamily' && source.lastTurnFamilies?.has(effect.family)) {
+        const nested = effectListAttack(effect.then || [], source, target, card);
+        if (nested === null) return null;
+        total += nested;
+      }
+      if (effect.kind === 'gamble' || effect.kind === 'rewind') return null;
+    }
+    return total;
   };
 
   const removeCardEverywhere = (cardId, { skipDeck = false } = {}) => {
@@ -340,7 +376,12 @@ export function createEngine(game, hooks) {
 
   const chooseEnemyCard = () => {
     const options = game.enemy.hand.filter((c) => c.energyCost <= game.enemy.energy);
-    if (!options.length) return null;
+    if (!options.length) {
+      game.enemy.intent = '행동 불가';
+      game.enemy.intentType = 'skill';
+      game.enemy.intentDamage = 0;
+      return null;
+    }
 
     const preferType = game.enemy.intentType === 'attack' ? 'skill' : 'attack';
     const typedOptions = options.filter((c) => c.type === preferType);
@@ -352,7 +393,17 @@ export function createEngine(game, hooks) {
     finalPool.sort((a, b) => b.baseValue - a.baseValue);
     const best = finalPool[0];
     game.enemy.intentType = best.type === 'attack' ? 'attack' : 'skill';
-    game.enemy.intent = best.type === 'attack' ? `${best.name} (공격)` : `${best.name} (스킬)`;
+    const expectedDamage = estimateIntentAttack(game.enemy, game.player, best);
+    game.enemy.intentDamage = expectedDamage;
+    if (best.type === 'attack') {
+      game.enemy.intent = expectedDamage === null
+        ? `${best.name} (공격 · 피해 계산 불가)`
+        : `${best.name} (공격 · 예상 피해 ${expectedDamage})`;
+    } else {
+      game.enemy.intent = expectedDamage && expectedDamage > 0
+        ? `${best.name} (스킬 · 부가 피해 ${expectedDamage})`
+        : `${best.name} (스킬)`;
+    }
     return best;
   };
 
