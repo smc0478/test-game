@@ -2,6 +2,7 @@ export const STATES = {
   READY: 'ready',
   PLANNING: 'planning',
   DECK_BUILD: 'deckBuild',
+  ROUTE_SELECT: 'routeSelect',
   PLAYER_TURN: 'playerTurn',
   ENEMY_TURN: 'enemyTurn',
   RESOLUTION: 'resolution',

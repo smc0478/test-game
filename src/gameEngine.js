@@ -1,4 +1,4 @@
-import { CARD_LIBRARY, STARTER_DECK, REGIONS, ENEMY_ARCHETYPES } from './data.js';
+import { CARD_LIBRARY, STARTER_DECK, REGIONS, ROUTE_TABLE, ROUTE_MODIFIERS, ENEMY_ARCHETYPES } from './data.js';
 import { STATES, SIGILS, MAX_ENERGY, MAX_HAND } from './constants.js';
 import { clamp, shuffle } from './utils.js';
 
@@ -21,9 +21,10 @@ function createActor({ name, hp, deckIds }) {
 
 export function createGame() {
   return {
-    state: STATES.READY, round: 0, totalRounds: 5, activeSide: 'player',
+    state: STATES.READY, round: 0, totalRounds: 10, activeSide: 'player',
     region: '-', score: 0, deck: [...STARTER_DECK], rewardChoices: [],
     rewardAccepted: false, removedInDeckBuild: false, discoverChoices: [],
+    routeChoices: [], currentRoute: null,
     playedCardsHistory: [],
     logs: ['대기 중: 런 시작 버튼을 누르세요.'],
     player: createActor({ name: '플레이어', hp: 84, deckIds: STARTER_DECK }),
@@ -51,6 +52,28 @@ export function createEngine(game, hooks) {
   };
 
   const scoreAction = (card) => { game.score += card.type === 'attack' ? 10 : 8; };
+
+  const getRouteCandidates = () => {
+    const routeRegionIds = ROUTE_TABLE[Math.min(game.round, ROUTE_TABLE.length - 1)] || [];
+    return routeRegionIds.map((regionId, idx) => {
+      const region = REGIONS.find((r) => r.id === regionId) || REGIONS[0];
+      const enemyId = region.enemies[(game.round + idx) % region.enemies.length];
+      const modifier = ROUTE_MODIFIERS[(game.round + idx) % ROUTE_MODIFIERS.length];
+      return { regionId: region.id, enemyId, modifier };
+    });
+  };
+
+  const applyRouteModifier = (route) => {
+    if (!route?.modifier) return;
+    if (route.modifier.enemyHpDelta) {
+      game.enemy.maxHp = Math.max(20, game.enemy.maxHp + route.modifier.enemyHpDelta);
+      game.enemy.hp = Math.min(game.enemy.hp, game.enemy.maxHp);
+    }
+    if (route.modifier.enemyBlock) game.enemy.block += route.modifier.enemyBlock;
+    if (route.modifier.bonusDraw) draw(game.player, route.modifier.bonusDraw);
+    if (route.modifier.bonusBlock) game.player.block += route.modifier.bonusBlock;
+    log(`경로 효과: ${route.modifier.name} - ${route.modifier.detail}`);
+  };
 
   const beginTurn = (actor, isPlayer) => {
     actor.block = 0;
@@ -268,16 +291,16 @@ export function createEngine(game, hooks) {
   };
 
   const setupRound = () => {
-    const regionIndex = Math.floor(game.round / 2);
-    const region = REGIONS[Math.min(regionIndex, REGIONS.length - 1)];
-    const enemyId = region.enemies[game.round % 2];
-    const enemyInfo = ENEMY_ARCHETYPES[enemyId];
+    const route = game.currentRoute || getRouteCandidates()[0];
+    const region = REGIONS.find((r) => r.id === route.regionId) || REGIONS[0];
+    const enemyInfo = ENEMY_ARCHETYPES[route.enemyId];
     game.region = region.name;
     game.enemy = createActor({ name: enemyInfo.name, hp: enemyInfo.hp, deckIds: enemyInfo.deck });
     game.rewardAccepted = false;
     game.removedInDeckBuild = false;
     beginTurn(game.player, true);
     beginTurn(game.enemy, false);
+    applyRouteModifier(route);
     game.state = STATES.PLANNING;
     chooseEnemyCard();
     game.state = STATES.PLAYER_TURN;
@@ -296,6 +319,8 @@ export function createEngine(game, hooks) {
     game.removedInDeckBuild = false;
     game.discoverChoices = [];
     game.playedCardsHistory = [];
+    game.routeChoices = getRouteCandidates();
+    game.currentRoute = game.routeChoices[0];
     setupRound();
     log('런 시작');
     onRender();
@@ -324,6 +349,7 @@ export function createEngine(game, hooks) {
         const pool = shuffle(Object.keys(CARD_LIBRARY)).slice(0, 3);
         game.rewardChoices = pool.map(cloneCard);
         game.rewardAccepted = false;
+        game.routeChoices = getRouteCandidates();
       }
       onRender();
       return;
@@ -435,6 +461,16 @@ export function createEngine(game, hooks) {
 
   const finishDeckBuild = () => {
     if (game.state !== STATES.DECK_BUILD || !game.rewardAccepted) return;
+    game.state = STATES.ROUTE_SELECT;
+    onRender();
+  };
+
+  const selectRoute = (index) => {
+    if (game.state !== STATES.ROUTE_SELECT) return;
+    const route = game.routeChoices[index];
+    if (!route) return;
+    game.currentRoute = route;
+    log(`경로 선택: ${REGIONS.find((r) => r.id === route.regionId)?.name || '-'} / ${ENEMY_ARCHETYPES[route.enemyId]?.name || '-'}`);
     setupRound();
   };
 
@@ -447,6 +483,7 @@ export function createEngine(game, hooks) {
     removeDeckCard,
     finishDeckBuild,
     selectDiscoverCard,
+    selectRoute,
     cloneCard,
     log
   };
