@@ -1,3 +1,7 @@
+## v1.7.1
+### Changed
+- 1라운드에서는 적 턴 시작 에너지를 최대 1로 제한해 초반 난이도를 완화.
+
 ## v1.7.0
 ### Added
 - Phaser 3 기반 `BootScene`, `BattleScene`를 추가해 배틀 스테이지를 Scene 구조로 전환.
