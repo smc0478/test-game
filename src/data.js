@@ -72,7 +72,12 @@ const BASE_CARD_LIBRARY = {
   C023: c('C023', '잎새 연쇄방진', 'leaf-concept', 'skill', 1, 6, 'Leaf', [{ kind: 'block', value: 6 }, { kind: 'nameRepeatBlockBonus', value: 4 }], '같은 이름 카드를 같은 턴에 다시 사용하면 반복당 방어도 4를 추가로 얻는다.'),
   C024: c('C024', '잎새 역습', 'leaf-concept', 'attack', 1, 0, 'Leaf', [{ kind: 'attackFromBlock' }], '현재 방어도만큼 적에게 피해를 준다.'),
   C025: c('C025', '잎새 가시덩굴', 'leaf-concept', 'skill', 1, 8, 'Leaf', [{ kind: 'block', value: 5 }, { kind: 'thorns', value: 3 }], '방어도 5와 가시 3을 얻는다.'),
-  C026: c('C026', '잎새 성역', 'leaf-concept', 'skill', 3, 18, 'Leaf', [{ kind: 'block', value: 18 }, { kind: 'retainBlockTurns', value: 2 }], '방어도 18을 얻고 내 방어도를 다음 2턴 동안 유지한다.')
+  C026: c('C026', '잎새 성역', 'leaf-concept', 'skill', 3, 18, 'Leaf', [{ kind: 'block', value: 18 }, { kind: 'retainBlockTurns', value: 2 }], '방어도 18을 얻고 내 방어도를 다음 2턴 동안 유지한다.'),
+  C027: c('C027', '성운 순환', 'nebula-draw', 'skill', 1, 1, 'Gear', [{ kind: 'drawByFamilyCount', value: 1 }], '같은 패밀리 카드를 이번 턴에 사용할 때마다 카드를 1장 더 뽑는다.'),
+  C028: c('C028', '오비탈 과충전', 'nebula-draw', 'attack', 1, 3, 'Gear', [{ kind: 'attackPerHandCard', value: 3 }], '현재 손패 장수 x3만큼 적에게 피해를 준다.'),
+  C029: c('C029', '백지 재편', 'nebula-draw', 'skill', 1, 5, 'Gear', [{ kind: 'redrawHandTo', value: 5 }], '현재 손패를 모두 버리고 새 카드 5장을 다시 뽑는다.'),
+  C030: c('C030', '시계왜곡 봉인', 'nebula-draw', 'skill', 1, 2, 'Gear', [{ kind: 'gainNextTurnEnergy', value: 2 }], '다음 내 턴 시작 시 에너지를 2 추가로 얻는다.'),
+  C031: c('C031', '영점 추출', 'nebula-draw', 'skill', 2, 2, 'Gear', [{ kind: 'drawThenDiscount', value: 2, discount: 1 }], '카드 2장을 뽑고, 이렇게 뽑은 카드의 코스트를 이번 턴 동안 1 감소시킨다.')
 };
 
 const buildConceptCards = () => ({});
@@ -221,6 +226,11 @@ export const DECK_GUIDES = [
     title: '기어 순환 컨셉',
     coreCards: ['C009', 'C010', 'C011', 'C012'],
     play: '기어 드로우 카드로 손패 순환을 가속하고 필요한 역할 카드를 빠르게 찾으세요.'
+  },
+  {
+    title: '성운 드로우 컨셉',
+    coreCards: ['C027', 'C028', 'C029', 'C031'],
+    play: '성운 순환(C027)과 영점 추출(C031)로 손패 코스트를 낮춘 뒤 오비탈 과충전(C028)으로 손패 비례 피해를 노리세요.'
   },
   {
     title: '공허 흡수 컨셉',

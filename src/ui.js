@@ -28,6 +28,11 @@ const effectText = (effect) => {
     convertBlockToDamage: '내 방어도 전량을 피해로 전환',
     attackFromBlock: '현재 방어도만큼 공격',
     retainBlockTurns: `방어도 유지 ${effect.value}턴`,
+    drawByFamilyCount: `같은 패밀리 사용 횟수만큼 드로우 x${effect.value}`,
+    attackPerHandCard: `현재 손패 장수 x${effect.value} 피해`,
+    redrawHandTo: `손패 전부 교체 후 ${effect.value}장 드로우`,
+    gainNextTurnEnergy: `다음 턴 에너지 +${effect.value}`,
+    drawThenDiscount: `카드 ${effect.value}장 드로우 후 코스트 -${effect.discount || 1}`,
     discover: `도감에서 후보 ${effect.value}장 제시`,
     rewind: '직전 사용 카드 효과 재발동',
     gamble: '무작위 결과 1개 발동'
