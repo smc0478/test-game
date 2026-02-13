@@ -208,7 +208,7 @@ export function createEngine(game, hooks) {
     onRender();
   };
 
-  const resolveState = () => {
+  const resolveRoundEnd = () => {
     const playerDead = game.player.hp <= 0;
     const enemyDead = game.enemy.hp <= 0;
     if (playerDead || enemyDead) {
@@ -235,11 +235,13 @@ export function createEngine(game, hooks) {
       onRender();
       return;
     }
+
     game.state = STATES.PLANNING;
-    game.activeSide = 'enemy';
+    game.activeSide = 'player';
     chooseEnemyCard();
-    game.state = STATES.ENEMY_TURN;
-    enemyTurn();
+    beginTurn(game.player, true);
+    game.state = STATES.PLAYER_TURN;
+    onRender();
   };
 
   const playCardAt = (idx) => {
@@ -257,9 +259,9 @@ export function createEngine(game, hooks) {
     updateSynergy(game.player, card);
     card.effect.forEach((effect) => applyEffect(game.player, game.enemy, effect, card));
     onRender();
-    if (game.enemy.hp <= 0) {
+    if (game.enemy.hp <= 0 || game.player.hp <= 0) {
       game.state = STATES.RESOLUTION;
-      resolveState();
+      resolveRoundEnd();
     }
   };
 
@@ -291,12 +293,7 @@ export function createEngine(game, hooks) {
     game.enemy.lastTurnFamilies = new Set(game.enemy.turnFamiliesUsed);
     game.state = STATES.RESOLUTION;
     onRender();
-    resolveState();
-    if ([STATES.ENEMY_TURN, STATES.PLAYER_TURN, STATES.RESOLUTION, STATES.GAME_OVER, STATES.RUN_COMPLETE, STATES.DECK_BUILD].includes(game.state)) return;
-    beginTurn(game.player, true);
-    game.state = STATES.PLAYER_TURN;
-    game.activeSide = 'player';
-    onRender();
+    resolveRoundEnd();
   };
 
   const endPlayerTurn = () => {
