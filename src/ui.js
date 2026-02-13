@@ -35,12 +35,34 @@ const effectText = (effect) => {
   return map[effect.kind] || effect.kind;
 };
 
-const cardTemplate = (card) => `<img class='card-art' src='${card.image}' alt='${card.name}' />
+const SIGIL_LABELS = {
+  Flame: '화염',
+  Leaf: '리프',
+  Gear: '기어',
+  Void: '공허',
+  Burst: '버스트'
+};
+
+const sigilIcon = (sigil) => {
+  const icons = {
+    Flame: '🔥',
+    Leaf: '🍃',
+    Gear: '⚙️',
+    Void: '🌌',
+    Burst: '💥'
+  };
+  return icons[sigil] || '✨';
+};
+
+const cardTemplate = (card) => `<div class='card-top'>
+  <span class='sigil-chip sigil-${card.sigil.toLowerCase()}'>${sigilIcon(card.sigil)} ${SIGIL_LABELS[card.sigil] || card.sigil}</span>
+  <span class='cost-chip'>코스트 ${card.energyCost}</span>
+</div>
+<img class='card-art' src='${card.image}' alt='${card.name}' />
 <h3>${card.name}</h3>
-<p>${card.id} | ${card.sigil} | ${card.type}</p>
-<p>패밀리: ${card.family} | 코스트 ${card.energyCost}</p>
-<p>효과: ${card.effect.map(effectText).join(', ')}</p>
-<p class='small'>설명: ${card.description || '설명 없음'}</p>`;
+<p class='meta'>${card.id} · ${card.type} · ${card.family}</p>
+<p><strong>효과</strong> ${card.effect.map(effectText).join(', ')}</p>
+<p class='small'>${card.description || '설명 없음'}</p>`;
 
 export function createUiBindings() {
   return {
@@ -127,7 +149,7 @@ export function render(ui, game, actions) {
   ui.hand.innerHTML = '';
   game.player.hand.forEach((card, idx) => {
     const wrap = document.createElement('article');
-    wrap.className = 'card';
+    wrap.className = `card sigil-${card.sigil.toLowerCase()}`;
     wrap.innerHTML = cardTemplate(card);
     const btn = document.createElement('button');
     btn.className = 'play-btn';
@@ -142,7 +164,7 @@ export function render(ui, game, actions) {
   SIGILS.forEach((sigil) => {
     const d = document.createElement('div');
     d.className = 'synergy-badge';
-    d.textContent = `${sigil}: ${game.player.sigilCounts[sigil]}`;
+    d.textContent = `${sigilIcon(sigil)} ${SIGIL_LABELS[sigil] || sigil}: ${game.player.sigilCounts[sigil]}`;
     ui.synergyInfo.appendChild(d);
   });
 
@@ -150,7 +172,7 @@ export function render(ui, game, actions) {
   SYNERGY_GUIDE.forEach((guide) => {
     const node = document.createElement('article');
     node.className = 'guide-item';
-    node.innerHTML = `<h3>${guide.sigil}</h3><p class='small'>${guide.effect}</p>`;
+    node.innerHTML = `<h3>${sigilIcon(guide.sigil)} ${SIGIL_LABELS[guide.sigil] || guide.sigil}</h3><p class='small'>${guide.effect}</p>`;
     ui.synergyEffects.appendChild(node);
   });
 
@@ -160,7 +182,7 @@ export function render(ui, game, actions) {
   if (game.state === STATES.DECK_BUILD) {
     game.rewardChoices.forEach((card) => {
       const node = document.createElement('article');
-      node.className = 'card';
+      node.className = `card sigil-${card.sigil.toLowerCase()}`;
       node.innerHTML = cardTemplate(card);
       const b = document.createElement('button');
       b.className = 'play-btn';
@@ -227,7 +249,7 @@ export function render(ui, game, actions) {
   if (discovering) {
     game.discoverChoices.forEach((card) => {
       const node = document.createElement('article');
-      node.className = 'card';
+      node.className = `card sigil-${card.sigil.toLowerCase()}`;
       node.innerHTML = cardTemplate(card);
       const b = document.createElement('button');
       b.className = 'play-btn';
