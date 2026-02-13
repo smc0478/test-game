@@ -62,7 +62,12 @@ const BASE_CARD_LIBRARY = {
   C013: c('C013', '공허 타격', 'void-core', 'attack', 1, 8, 'Void', [{ kind: 'attack', value: 8 }], '적에게 피해 8을 준다.'),
   C014: c('C014', '공허 장막', 'void-core', 'skill', 1, 8, 'Void', [{ kind: 'block', value: 8 }], '방어도 8을 얻는다.'),
   C015: c('C015', '공허 통찰', 'void-core', 'skill', 1, 2, 'Void', [{ kind: 'draw', value: 2 }], '카드를 2장 뽑는다.'),
-  C016: c('C016', '공허 재생', 'void-core', 'skill', 1, 5, 'Void', [{ kind: 'heal', value: 5 }], '체력을 5 회복한다.')
+  C016: c('C016', '공허 재생', 'void-core', 'skill', 1, 5, 'Void', [{ kind: 'heal', value: 5 }], '체력을 5 회복한다.'),
+  C017: c('C017', '화염 가속', 'flame-concept', 'attack', 1, 9, 'Flame', [{ kind: 'attack', value: 6 }, { kind: 'bonusDamage', value: 3 }], '적에게 피해 6을 주고 추가 피해 3을 준다.'),
+  C018: c('C018', '화염 공명', 'flame-concept', 'attack', 1, 7, 'Flame', [{ kind: 'attack', value: 7 }, { kind: 'nameRepeatBonus', value: 4 }], '같은 이름 카드를 같은 턴에 다시 사용할수록 반복당 추가 피해 4를 준다.'),
+  C019: c('C019', '화염 예열', 'flame-concept', 'skill', 1, 6, 'Flame', [{ kind: 'nextAttackBonus', value: 6 }], '다음 공격 1회에 추가 피해 6을 부여한다.'),
+  C020: c('C020', '화염 낙인', 'flame-concept', 'attack', 1, 11, 'Flame', [{ kind: 'attack', value: 11 }], '적에게 피해 11을 준다.'),
+  C021: c('C021', '화염 점화', 'flame-concept', 'attack', 1, 7, 'Flame', [{ kind: 'attack', value: 7 }, { kind: 'gainEnergy', value: 1 }], '적에게 피해 7을 주고 에너지 1을 회복한다.')
 };
 
 const buildConceptCards = () => ({});
@@ -199,8 +204,8 @@ export const ENEMY_BESTIARY = {
 export const DECK_GUIDES = [
   {
     title: '화염 압박 컨셉',
-    coreCards: ['C001', 'C002', 'C003', 'C004'],
-    play: '화염 카드 2회 이상으로 공격 시너지를 빠르게 켜고, 회복 카드로 체력을 유지하세요.'
+    coreCards: ['C001', 'C017', 'C019', 'C021'],
+    play: '화염 예열(C019)로 다음 타격을 강화하고 화염 가속/점화로 짧은 턴 폭딜을 노리세요.'
   },
   {
     title: '리프 방어 컨셉',
