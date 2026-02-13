@@ -14,18 +14,19 @@ function createActor({ name, hp, deckIds }) {
     activeSynergies: { Flame: false, Leaf: false, Gear: false, Void: false },
     comboChain: 0, lastSigil: null, turnScoreMultiplier: false,
     adrenalineTriggered: false, prismBurstTriggered: false, momentumTriggered: false,
+    sigilBurstTriggered: { Flame: false, Leaf: false, Gear: false, Void: false },
     intent: '준비', intentType: 'skill', lastPlayedCardId: null
   };
 }
 
 export function createGame() {
   return {
-    state: STATES.READY, round: 0, totalRounds: 6, activeSide: 'player',
+    state: STATES.READY, round: 0, totalRounds: 5, activeSide: 'player',
     region: '-', score: 0, deck: [...STARTER_DECK], rewardChoices: [],
     rewardAccepted: false, removedInDeckBuild: false, discoverChoices: [],
     playedCardsHistory: [],
     logs: ['대기 중: 런 시작 버튼을 누르세요.'],
-    player: createActor({ name: '플레이어', hp: 72, deckIds: STARTER_DECK }),
+    player: createActor({ name: '플레이어', hp: 84, deckIds: STARTER_DECK }),
     enemy: null
   };
 }
@@ -63,6 +64,7 @@ export function createEngine(game, hooks) {
     actor.momentumTriggered = false;
     actor.sigilCounts = { Flame: 0, Leaf: 0, Gear: 0, Void: 0 };
     actor.activeSynergies = { Flame: false, Leaf: false, Gear: false, Void: false };
+    actor.sigilBurstTriggered = { Flame: false, Leaf: false, Gear: false, Void: false };
     actor.turnScoreMultiplier = false;
     actor.thorns = 0;
     actor.vulnerable = Math.max(0, actor.vulnerable - 1);
@@ -112,9 +114,34 @@ export function createEngine(game, hooks) {
     if (actor.comboChain >= 4 && !actor.prismBurstTriggered) {
       actor.prismBurstTriggered = true;
       actor.block += 8;
-      applyDamage(actor === game.player ? game.enemy : game.player, 8);
+      applyDamage(actor === game.player ? game.enemy : game.player, 12);
       game.score += 20;
       log(`${actor.name} 프리즘 버스트 발동`);
+    }
+
+    if (actor.sigilCounts[card.sigil] >= 3 && !actor.sigilBurstTriggered[card.sigil]) {
+      actor.sigilBurstTriggered[card.sigil] = true;
+      if (card.sigil === 'Flame') {
+        applyDamage(actor === game.player ? game.enemy : game.player, 16);
+        log(`${actor.name} 화염 폭주: 추가 피해 16`);
+      }
+      if (card.sigil === 'Leaf') {
+        actor.block += 16;
+        actor.hp = clamp(actor.hp + 8, 0, actor.maxHp);
+        log(`${actor.name} 리프 개화: 방어 16 + 회복 8`);
+      }
+      if (card.sigil === 'Gear') {
+        actor.energy += 2;
+        draw(actor, 3);
+        log(`${actor.name} 기어 과충전: 에너지 2 + 드로우 3`);
+      }
+      if (card.sigil === 'Void') {
+        applyDamage(actor === game.player ? game.enemy : game.player, 12);
+        const rival = actor === game.player ? game.enemy : game.player;
+        rival.vulnerable += 2;
+        log(`${actor.name} 공허 붕괴: 피해 12 + 취약 2`);
+      }
+      game.score += 15;
     }
   };
 
@@ -134,20 +161,23 @@ export function createEngine(game, hooks) {
 
     if (effect.kind === 'attack') {
       const buffBonus = source.attackBuff;
-      const flameBonus = source.activeSynergies.Flame ? 3 : 0;
+      const flameBonus = source.activeSynergies.Flame ? 6 : 0;
+      const voidBonus = source.activeSynergies.Void ? 4 : 0;
       const vulnerableBonus = target.vulnerable > 0 ? 2 : 0;
-      const damage = effect.value + buffBonus + flameBonus + vulnerableBonus;
+      const damage = effect.value + buffBonus + flameBonus + voidBonus + vulnerableBonus;
       const dealt = applyDamage(target, damage);
       const formula = [
         `기본 ${effect.value}`,
         buffBonus ? `강화 +${buffBonus}` : null,
         flameBonus ? `화염시너지 +${flameBonus}` : null,
+        voidBonus ? `공허시너지 +${voidBonus}` : null,
         vulnerableBonus ? `취약 +${vulnerableBonus}` : null
       ].filter(Boolean).join(', ');
       log(`${source.name} 공격 ${dealt} (계산: ${formula})`);
+      if (source.activeSynergies.Void) source.hp = clamp(source.hp + 2, 0, source.maxHp);
       source.attackBuff = 0;
     }
-    if (effect.kind === 'block') source.block += effect.value + (source.activeSynergies.Leaf ? 3 : 0);
+    if (effect.kind === 'block') source.block += effect.value + (source.activeSynergies.Leaf ? 6 : 0);
     if (effect.kind === 'draw') draw(source, effect.value + (source.activeSynergies.Gear ? 1 : 0));
     if (effect.kind === 'heal') source.hp = clamp(source.hp + effect.value, 0, source.maxHp);
     if (effect.kind === 'gainEnergy') source.energy += effect.value;
@@ -188,19 +218,32 @@ export function createEngine(game, hooks) {
       log(`${source.name} 되감기: ${replay.name} 효과 재발동`);
     }
     if (effect.kind === 'gamble') {
-      const roll = shuffle(['attack', 'block', 'tempo'])[0];
+      const dominantSigil = SIGILS.reduce((best, sigil) => (source.sigilCounts[sigil] > source.sigilCounts[best] ? sigil : best), 'Flame');
+      let roll = shuffle(['attack', 'block', 'tempo'])[0];
+      if (source.activeSynergies[dominantSigil]) {
+        if (dominantSigil === 'Flame') roll = 'attack';
+        if (dominantSigil === 'Leaf') roll = 'block';
+        if (dominantSigil === 'Gear') roll = 'tempo';
+        if (dominantSigil === 'Void') roll = 'void';
+      }
       if (roll === 'attack') {
-        const dealt = applyDamage(target, 12);
+        const dealt = applyDamage(target, 16);
         log(`${source.name} 도박 성공: 폭딜 ${dealt}`);
       }
       if (roll === 'block') {
-        source.block += 12;
-        log(`${source.name} 도박 성공: 방어 12`);
+        source.block += 14;
+        source.hp = clamp(source.hp + 4, 0, source.maxHp);
+        log(`${source.name} 도박 성공: 방어 14 + 회복 4`);
       }
       if (roll === 'tempo') {
         draw(source, 2);
-        source.energy += 1;
-        log(`${source.name} 도박 성공: 드로우 2 + 에너지 1`);
+        source.energy += 2;
+        log(`${source.name} 도박 성공: 드로우 2 + 에너지 2`);
+      }
+      if (roll === 'void') {
+        const dealt = applyDamage(target, 10);
+        target.vulnerable += 1;
+        log(`${source.name} 도박 성공: 공허타격 ${dealt} + 취약 1`);
       }
     }
 
@@ -238,7 +281,7 @@ export function createEngine(game, hooks) {
     game.round = 0;
     game.score = 0;
     game.deck = [...STARTER_DECK];
-    game.player = createActor({ name: '플레이어', hp: 72, deckIds: game.deck });
+    game.player = createActor({ name: '플레이어', hp: 84, deckIds: game.deck });
     game.enemy = null;
     game.rewardChoices = [];
     game.rewardAccepted = false;
