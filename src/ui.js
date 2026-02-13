@@ -270,7 +270,7 @@ export function render(ui, game, actions) {
   ui.enemyEnergy.textContent = game.enemy?.energy || 0;
   ui.enemyIntent.textContent = game.enemy?.intent || '-';
   ui.enemyThreat.textContent = game.enemy?.threatLevel || 1;
-  ui.enemyActions.textContent = 1 + (game.enemy?.extraActionBudget || 0);
+  ui.enemyActions.textContent = '에너지 소진형';
   ui.regionName.textContent = game.region;
   ui.roundInfo.textContent = `${Math.min(game.round + 1, game.totalRounds)} / ${game.totalRounds}`;
   ui.battleState.textContent = game.state;
