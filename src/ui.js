@@ -126,11 +126,15 @@ export function createUiBindings() {
     gameRoot: document.querySelector('#game-root'),
     playerHp: document.querySelector('#player-hp'),
     playerMaxHp: document.querySelector('#player-max-hp'),
+    playerHpMain: document.querySelector('#player-hp-main'),
+    playerMaxHpMain: document.querySelector('#player-max-hp-main'),
     playerBlock: document.querySelector('#player-block'),
     playerEnergy: document.querySelector('#player-energy'),
     enemyName: document.querySelector('#enemy-name'),
     enemyHp: document.querySelector('#enemy-hp'),
     enemyMaxHp: document.querySelector('#enemy-max-hp'),
+    enemyHpMain: document.querySelector('#enemy-hp-main'),
+    enemyMaxHpMain: document.querySelector('#enemy-max-hp-main'),
     enemyBlock: document.querySelector('#enemy-block'),
     enemyEnergy: document.querySelector('#enemy-energy'),
     enemyIntent: document.querySelector('#enemy-intent'),
@@ -171,11 +175,15 @@ export function createUiBindings() {
 export function render(ui, game, actions) {
   ui.playerHp.textContent = game.player.hp;
   ui.playerMaxHp.textContent = game.player.maxHp;
+  ui.playerHpMain.textContent = game.player.hp;
+  ui.playerMaxHpMain.textContent = game.player.maxHp;
   ui.playerBlock.textContent = game.player.block;
   ui.playerEnergy.textContent = game.player.energy;
   ui.enemyName.textContent = game.enemy?.name || '-';
   ui.enemyHp.textContent = game.enemy?.hp || 0;
   ui.enemyMaxHp.textContent = game.enemy?.maxHp || 0;
+  ui.enemyHpMain.textContent = game.enemy?.hp || 0;
+  ui.enemyMaxHpMain.textContent = game.enemy?.maxHp || 0;
   ui.enemyBlock.textContent = game.enemy?.block || 0;
   ui.enemyEnergy.textContent = game.enemy?.energy || 0;
   ui.enemyIntent.textContent = game.enemy?.intent || '-';
