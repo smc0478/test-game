@@ -60,7 +60,10 @@ export const CARD_LIBRARY = {
   C028: c('C028', '결정 장막', 'prismGuard', 'skill', 1, 7, 'Leaf', [{ kind: 'block', value: 7 }, { kind: 'ifEnemyIntent', intent: 'attack', then: [{ kind: 'thorns', value: 3 }] }], '적이 공격 의도면 가시를 3 얻어 반격 준비를 합니다.'),
   C029: c('C029', '역전 톱니', 'clockwork', 'skill', 2, 0, 'Gear', [{ kind: 'convertBlockToDamage', value: 100 }], '현재 방어도를 모두 소모해 같은 수치만큼 즉시 피해를 줍니다.'),
   C030: c('C030', '영점 폭발', 'voidRitual', 'attack', 2, 9, 'Flame', [{ kind: 'attack', value: 9 }, { kind: 'ifEnemyHpBelow', value: 22, then: [{ kind: 'attack', value: 10 }] }], '적 체력이 22 이하일 때 추가 폭발 피해를 가합니다.'),
-  C031: c('C031', '아카이브 스캔', 'archive', 'skill', 1, 0, 'Gear', [{ kind: 'discover', value: 3 }], '카드 도감에서 임시 카드 1장을 선택해 손패에 추가합니다.')
+  C031: c('C031', '아카이브 스캔', 'archive', 'skill', 1, 0, 'Gear', [{ kind: 'discover', value: 3 }], '카드 도감에서 임시 카드 1장을 선택해 손패에 추가합니다.'),
+  C032: c('C032', '시간 되감기', 'chrono', 'skill', 1, 0, 'Void', [{ kind: 'rewind', value: 1 }], '직전에 사용한 내 카드의 효과를 비용 없이 한 번 더 발동합니다.'),
+  C033: c('C033', '카이오스 잭팟', 'chaos', 'skill', 1, 0, 'Flame', [{ kind: 'gamble', value: 1 }], '무작위로 폭딜/방어/템포 보너스 중 하나를 얻습니다.'),
+  C034: c('C034', '프리즘 잔상', 'prismBlade', 'attack', 2, 11, 'Gear', [{ kind: 'attack', value: 11 }, { kind: 'rewind', value: 1 }], '공격 후 직전 카드 효과를 이어붙여 콤보를 확장합니다.')
 };
 
 export const STARTER_DECK = ['C001', 'C003', 'C004', 'C006', 'C007', 'C008', 'C010', 'C012', 'C014', 'C015', 'C021', 'C023'];
@@ -77,5 +80,5 @@ export const ENEMY_ARCHETYPES = {
   gearSentinel: { id: 'gearSentinel', name: '기어 센티넬', hp: 76, deck: ['C004', 'C008', 'C015', 'C017', 'C022', 'C025', 'C029'] },
   thornDruid: { id: 'thornDruid', name: '가시 드루이드', hp: 80, deck: ['C003', 'C006', 'C011', 'C013', 'C024', 'C028'] },
   voidReaper: { id: 'voidReaper', name: '공허 수확자', hp: 88, deck: ['C005', 'C010', 'C012', 'C018', 'C023', 'C026', 'C027'] },
-  prismOverlord: { id: 'prismOverlord', name: '프리즘 군주', hp: 110, deck: ['C001', 'C011', 'C012', 'C021', 'C023', 'C026', 'C030'] }
+  prismOverlord: { id: 'prismOverlord', name: '프리즘 군주', hp: 110, deck: ['C001', 'C011', 'C012', 'C021', 'C023', 'C026', 'C030', 'C033', 'C034'] }
 };

@@ -1,0 +1,43 @@
+import { CARD_LIBRARY } from './src/data.js';
+
+const effectText = (effect) => {
+  const map = {
+    attack: `공격 ${effect.value}`,
+    block: `방어 ${effect.value}`,
+    draw: `드로우 ${effect.value}`,
+    buffAttack: `다음 공격 +${effect.value}`,
+    reduceBlock: `적 방어 -${effect.value}`,
+    heal: `회복 ${effect.value}`,
+    gainEnergy: `에너지 +${effect.value}`,
+    thorns: `가시 ${effect.value}`,
+    vulnerable: `취약 ${effect.value}`,
+    drain: `흡혈 ${effect.value}`,
+    selfDamage: `자가 피해 ${effect.value}`,
+    echoAttack: `동명 공명 +${effect.value}`,
+    swapIntent: '적 의도 전환',
+    convertBlockToDamage: '내 방어도 전량을 피해로 전환',
+    discover: `도감에서 후보 ${effect.value}장 제시`,
+    rewind: '직전 사용 카드 효과 재발동',
+    gamble: '무작위 결과 1개 발동'
+  };
+
+  if (effect.kind === 'ifLastTurnFamily') return `전 턴 ${effect.family}: ${effect.then.map(effectText).join(' + ')}`;
+  if (effect.kind === 'ifEnemyIntent') return `적 의도(${effect.intent})일 때: ${effect.then.map(effectText).join(' + ')}`;
+  if (effect.kind === 'ifEnemyHpBelow') return `적 HP ${effect.value} 이하일 때: ${effect.then.map(effectText).join(' + ')}`;
+  return map[effect.kind] || effect.kind;
+};
+
+const cardTemplate = (card) => `<img class='card-art' src='${card.image}' alt='${card.name}' />
+<h3>${card.name}</h3>
+<p>${card.id} | ${card.sigil} | ${card.type}</p>
+<p>패밀리: ${card.family} | 코스트 ${card.energyCost}</p>
+<p>효과: ${card.effect.map(effectText).join(', ')}</p>
+<p class='small'>설명: ${card.description || '설명 없음'}</p>`;
+
+const wrap = document.querySelector('#codex-cards');
+Object.values(CARD_LIBRARY).forEach((card) => {
+  const node = document.createElement('article');
+  node.className = 'card mini';
+  node.innerHTML = cardTemplate(card);
+  wrap.appendChild(node);
+});

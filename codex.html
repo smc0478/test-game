@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>카드 도감 | 시너지 턴 카드 배틀 v0.8</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="top-bar">
+      <div>
+        <h1>카드 도감</h1>
+        <p class="subtitle">전체 카드와 효과를 한 페이지에서 확인하세요.</p>
+      </div>
+      <div class="controls">
+        <a href="index.html"><button type="button">전투 화면으로 돌아가기</button></a>
+      </div>
+    </header>
+
+    <section class="panel">
+      <h2>전체 카드 목록</h2>
+      <p class="small">버전 v0.8 카드 풀을 기준으로 렌더링합니다.</p>
+      <div id="codex-cards" class="hand"></div>
+    </section>
+  </main>
+  <script type="module" src="./codex.js"></script>
+</body>
+</html>

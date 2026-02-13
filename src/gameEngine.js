@@ -14,7 +14,7 @@ function createActor({ name, hp, deckIds }) {
     activeSynergies: { Flame: false, Leaf: false, Gear: false, Void: false },
     comboChain: 0, lastSigil: null, turnScoreMultiplier: false,
     adrenalineTriggered: false, prismBurstTriggered: false, momentumTriggered: false,
-    intent: '준비', intentType: 'skill'
+    intent: '준비', intentType: 'skill', lastPlayedCardId: null
   };
 }
 
@@ -23,6 +23,7 @@ export function createGame() {
     state: STATES.READY, round: 0, totalRounds: 6, activeSide: 'player',
     region: '-', score: 0, deck: [...STARTER_DECK], rewardChoices: [],
     rewardAccepted: false, removedInDeckBuild: false, discoverChoices: [],
+    playedCardsHistory: [],
     logs: ['대기 중: 런 시작 버튼을 누르세요.'],
     player: createActor({ name: '플레이어', hp: 72, deckIds: STARTER_DECK }),
     enemy: null
@@ -117,17 +118,17 @@ export function createEngine(game, hooks) {
     }
   };
 
-  const applyEffect = (source, target, effect, card) => {
+  const applyEffect = (source, target, effect, card, context = { fromRewind: false }) => {
     if (effect.kind === 'ifLastTurnFamily') {
-      if (source.lastTurnFamilies.has(effect.family)) effect.then.forEach((e) => applyEffect(source, target, e, card));
+      if (source.lastTurnFamilies.has(effect.family)) effect.then.forEach((e) => applyEffect(source, target, e, card, context));
       return;
     }
     if (effect.kind === 'ifEnemyIntent') {
-      if (target.intentType === effect.intent) effect.then.forEach((e) => applyEffect(source, target, e, card));
+      if (target.intentType === effect.intent) effect.then.forEach((e) => applyEffect(source, target, e, card, context));
       return;
     }
     if (effect.kind === 'ifEnemyHpBelow') {
-      if (target.hp <= effect.value) effect.then.forEach((e) => applyEffect(source, target, e, card));
+      if (target.hp <= effect.value) effect.then.forEach((e) => applyEffect(source, target, e, card, context));
       return;
     }
 
@@ -167,6 +168,34 @@ export function createEngine(game, hooks) {
       game.state = STATES.PLANNING;
       log('아카이브 스캔: 도감에서 임시 카드 선택');
     }
+
+    if (effect.kind === 'rewind') {
+      if (context.fromRewind) return;
+      if (!source.lastPlayedCardId) {
+        log(`${source.name} 되감기 실패: 직전 카드 없음`, 'bad');
+        return;
+      }
+      const replay = cloneCard(source.lastPlayedCardId);
+      replay.effect.forEach((nested) => applyEffect(source, target, nested, replay, { fromRewind: true }));
+      log(`${source.name} 되감기: ${replay.name} 효과 재발동`);
+    }
+    if (effect.kind === 'gamble') {
+      const roll = shuffle(['attack', 'block', 'tempo'])[0];
+      if (roll === 'attack') {
+        const dealt = applyDamage(target, 12);
+        log(`${source.name} 도박 성공: 폭딜 ${dealt}`);
+      }
+      if (roll === 'block') {
+        source.block += 12;
+        log(`${source.name} 도박 성공: 방어 12`);
+      }
+      if (roll === 'tempo') {
+        draw(source, 2);
+        source.energy += 1;
+        log(`${source.name} 도박 성공: 드로우 2 + 에너지 1`);
+      }
+    }
+
   };
 
   const chooseEnemyCard = () => {
@@ -207,6 +236,7 @@ export function createEngine(game, hooks) {
     game.rewardAccepted = false;
     game.removedInDeckBuild = false;
     game.discoverChoices = [];
+    game.playedCardsHistory = [];
     setupRound();
     log('런 시작');
     onRender();
@@ -262,6 +292,9 @@ export function createEngine(game, hooks) {
     }
     updateSynergy(game.player, card);
     card.effect.forEach((effect) => applyEffect(game.player, game.enemy, effect, card));
+    game.playedCardsHistory.unshift({ id: card.id, name: card.name });
+    game.playedCardsHistory = game.playedCardsHistory.slice(0, 12);
+    game.player.lastPlayedCardId = card.id;
     onRender();
     if (game.enemy.hp <= 0 || game.player.hp <= 0) {
       game.state = STATES.RESOLUTION;
@@ -294,6 +327,7 @@ export function createEngine(game, hooks) {
     game.enemy.discardPile.push(card.id);
     updateSynergy(game.enemy, card);
     card.effect.forEach((effect) => applyEffect(game.enemy, game.player, effect, card));
+    game.enemy.lastPlayedCardId = card.id;
     game.enemy.lastTurnFamilies = new Set(game.enemy.turnFamiliesUsed);
     game.state = STATES.RESOLUTION;
     onRender();
