@@ -1,3 +1,12 @@
+## v2.6.0
+### Added
+- 공허 흡혈 컨셉 카드 5장(C032~C036)을 추가해 체력-흡혈 리스크/리턴 빌드 선택지를 확장.
+- 신규 효과 타입 `grantNextAttackLifestealFromDamage`, `increaseHealPower`, `payHpCost`, `attackPerMissingHp`, `grantLifestealOnAttack`를 전투 로직에 반영.
+
+### Changed
+- 카드 풀을 36장(C001~C036)으로 확장.
+- 도감 동기화: 신규 공허 흡혈 카드의 코스트/효과 문구가 카드 목록에 노출되는지 확인.
+
 ## v2.5.0
 ### Added
 - 성운 드로우 컨셉 카드 5장(C027~C031)을 추가해 드로우-템포 빌드 선택지를 확장.

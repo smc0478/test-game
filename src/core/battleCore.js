@@ -18,6 +18,9 @@ function createActor({ name, hp, deckIds }) {
     sigilBurstTriggered: { Flame: false, Leaf: false, Gear: false, Void: false },
     turnCardNameCounts: {},
     pendingNextAttackBonus: 0,
+    nextAttackLifestealFromDamage: false,
+    lifestealOnAttack: 0,
+    healPower: 0,
     blockRetainTurns: 0,
     nextTurnEnergyBonus: 0,
     intent: '준비', intentType: 'skill', intentDamage: null, lastPlayedCardId: null,
@@ -152,6 +155,9 @@ export function createEngine(game, hooks) {
     actor.sigilBurstTriggered = { Flame: false, Leaf: false, Gear: false, Void: false };
     actor.turnCardNameCounts = {};
     actor.turnScoreMultiplier = false;
+    actor.healPower = 0;
+    actor.lifestealOnAttack = 0;
+    actor.nextAttackLifestealFromDamage = false;
     actor.thorns = 0;
     actor.vulnerable = Math.max(0, actor.vulnerable - 1);
     draw(actor, PLAYER_BASE_DRAW + (isPlayer ? 0 : (actor.extraDrawPerTurn || 0)));
@@ -178,6 +184,13 @@ export function createEngine(game, hooks) {
     target.block -= blocked;
     target.hp = clamp(target.hp - real, 0, target.maxHp);
     return real;
+  };
+
+  const restoreHp = (actor, baseValue) => {
+    const adjusted = Math.max(0, baseValue + (actor.healPower || 0));
+    const before = actor.hp;
+    actor.hp = clamp(actor.hp + adjusted, 0, actor.maxHp);
+    return actor.hp - before;
   };
 
   const estimateIntentAttack = (source, target, card) => {
@@ -230,6 +243,10 @@ export function createEngine(game, hooks) {
         total += nested;
       }
       if (effect.kind === 'attackPerHandCard') total += source.hand.length * effect.value;
+      if (effect.kind === 'attackPerMissingHp') {
+        const missingHp = Math.max(0, source.maxHp - source.hp);
+        total += Math.min(effect.cap ?? Number.MAX_SAFE_INTEGER, missingHp * effect.value);
+      }
       if (effect.kind === 'gamble' || effect.kind === 'rewind') return null;
     }
     return total;
@@ -351,7 +368,16 @@ export function createEngine(game, hooks) {
         nextAttackBonus ? `예열 +${nextAttackBonus}` : null
       ].filter(Boolean).join(', ');
       log(`${source.name} 공격 ${dealt} (계산: ${formula})`);
-      if (source.activeSynergies.Void) source.hp = clamp(source.hp + 1, 0, source.maxHp);
+      if (source.activeSynergies.Void) restoreHp(source, 1);
+      if (source.lifestealOnAttack > 0) {
+        const healed = restoreHp(source, source.lifestealOnAttack);
+        if (healed > 0) log(`${source.name} 흡혈 고정 회복 ${healed}`);
+      }
+      if (source.nextAttackLifestealFromDamage) {
+        const healed = restoreHp(source, dealt);
+        source.nextAttackLifestealFromDamage = false;
+        log(`${source.name} 혈인 흡혈 ${healed}`);
+      }
       source.pendingNextAttackBonus = 0;
       source.attackBuff = 0;
     }
@@ -383,12 +409,28 @@ export function createEngine(game, hooks) {
     }
     if (effect.kind === 'block') source.block += effect.value + (source.activeSynergies.Leaf ? 7 : 0);
     if (effect.kind === 'draw') draw(source, effect.value + (source.activeSynergies.Gear ? 1 : 0));
-    if (effect.kind === 'heal') source.hp = clamp(source.hp + effect.value, 0, source.maxHp);
+    if (effect.kind === 'heal') restoreHp(source, effect.value);
     if (effect.kind === 'gainEnergy') source.energy += effect.value;
     if (effect.kind === 'buffAttack') source.attackBuff += effect.value;
     if (effect.kind === 'reduceBlock') target.block = Math.max(0, target.block - effect.value);
     if (effect.kind === 'vulnerable') target.vulnerable += effect.value;
-    if (effect.kind === 'drain') source.hp = clamp(source.hp + effect.value, 0, source.maxHp);
+    if (effect.kind === 'drain') restoreHp(source, effect.value);
+    if (effect.kind === 'increaseHealPower') {
+      source.healPower += effect.value;
+      log(`${source.name} 회복 증폭 +${effect.value}`);
+    }
+    if (effect.kind === 'grantNextAttackLifestealFromDamage') {
+      source.nextAttackLifestealFromDamage = true;
+      log(`${source.name} 다음 공격 피해량 흡혈 준비`);
+    }
+    if (effect.kind === 'grantLifestealOnAttack') {
+      source.lifestealOnAttack += effect.value;
+      log(`${source.name} 공격 시 고정 흡혈 +${effect.value}`);
+    }
+    if (effect.kind === 'payHpCost') {
+      source.hp = clamp(source.hp - effect.value, 0, source.maxHp);
+      log(`${source.name} 혈비 ${effect.value} 지불`);
+    }
     if (effect.kind === 'thorns') source.thorns += effect.value;
     if (effect.kind === 'selfDamage') applyDamage(source, effect.value);
     if (effect.kind === 'echoAttack' && source.turnFamilyCounts[card.family] > 1) applyDamage(target, effect.value);
@@ -427,6 +469,12 @@ export function createEngine(game, hooks) {
     if (effect.kind === 'attackPerHandCard') {
       const dealt = applyDamage(target, source.hand.length * effect.value);
       log(`${source.name} 손패 비례 공격 ${dealt}`);
+    }
+    if (effect.kind === 'attackPerMissingHp') {
+      const missingHp = Math.max(0, source.maxHp - source.hp);
+      const rawDamage = missingHp * effect.value;
+      const dealt = applyDamage(target, Math.min(effect.cap ?? rawDamage, rawDamage));
+      log(`${source.name} 결손 비례 공격 ${dealt}`);
     }
     if (effect.kind === 'redrawHandTo') {
       source.discardPile.push(...source.hand.map((handCard) => handCard.id));
@@ -488,8 +536,12 @@ export function createEngine(game, hooks) {
 
   };
 
-  const selectEnemyCard = ({ hand, energy, intentType, lastPlayedCardId }) => {
-    const options = hand.filter((c) => c.energyCost <= energy);
+  const getHpCost = (card) => card.effect
+    .filter((effect) => effect.kind === 'payHpCost')
+    .reduce((sum, effect) => sum + effect.value, 0);
+
+  const selectEnemyCard = ({ hand, energy, intentType, lastPlayedCardId, hp }) => {
+    const options = hand.filter((c) => c.energyCost <= energy && hp > getHpCost(c));
     if (!options.length) return null;
     const preferType = intentType === 'attack' ? 'skill' : 'attack';
     const typedOptions = options.filter((c) => c.type === preferType);
@@ -512,7 +564,7 @@ export function createEngine(game, hooks) {
     while (true) {
       const selected = !simulatedFirst && firstCard
         ? firstCard
-        : selectEnemyCard({ hand, energy, intentType, lastPlayedCardId });
+        : selectEnemyCard({ hand, energy, intentType, lastPlayedCardId, hp: game.enemy.hp });
       simulatedFirst = true;
       if (!selected) break;
 
@@ -540,7 +592,7 @@ export function createEngine(game, hooks) {
   };
 
   const chooseEnemyCard = ({ forExecution = false } = {}) => {
-    const best = selectEnemyCard(game.enemy);
+    const best = selectEnemyCard({ ...game.enemy, hp: game.enemy.hp });
     if (!best) {
       if (!forExecution) {
         game.enemy.intent = '행동 불가';
@@ -659,6 +711,8 @@ export function createEngine(game, hooks) {
     if (game.state !== STATES.PLAYER_TURN) return;
     const card = game.player.hand[idx];
     if (!card || card.energyCost > game.player.energy) return;
+    const hpCost = getHpCost(card);
+    if (game.player.hp <= hpCost) return;
     game.player.energy -= card.energyCost;
     game.player.hand.splice(idx, 1);
     game.player.discardPile.push(card.id);
