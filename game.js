@@ -1,8 +1,10 @@
 import { createGame, createEngine } from './src/gameEngine.js';
-import { createUiBindings, render } from './src/ui.js';
+import { createUiBindings, initBattleUI, render } from './src/ui.js';
 
 const ui = createUiBindings();
 const game = createGame();
+
+initBattleUI(ui);
 
 const engine = createEngine(game, {
   onRender: () => render(ui, game, engine)
