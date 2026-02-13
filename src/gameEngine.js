@@ -133,10 +133,18 @@ export function createEngine(game, hooks) {
     }
 
     if (effect.kind === 'attack') {
-      let damage = effect.value + source.attackBuff + (source.activeSynergies.Flame ? 3 : 0);
-      if (target.vulnerable > 0) damage += 2;
+      const buffBonus = source.attackBuff;
+      const flameBonus = source.activeSynergies.Flame ? 3 : 0;
+      const vulnerableBonus = target.vulnerable > 0 ? 2 : 0;
+      const damage = effect.value + buffBonus + flameBonus + vulnerableBonus;
       const dealt = applyDamage(target, damage);
-      log(`${source.name} 공격 ${dealt}`);
+      const formula = [
+        `기본 ${effect.value}`,
+        buffBonus ? `강화 +${buffBonus}` : null,
+        flameBonus ? `화염시너지 +${flameBonus}` : null,
+        vulnerableBonus ? `취약 +${vulnerableBonus}` : null
+      ].filter(Boolean).join(', ');
+      log(`${source.name} 공격 ${dealt} (계산: ${formula})`);
       source.attackBuff = 0;
     }
     if (effect.kind === 'block') source.block += effect.value + (source.activeSynergies.Leaf ? 3 : 0);
