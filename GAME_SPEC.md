@@ -1,18 +1,18 @@
 # GAME_SPEC.md
 
 ## Spec Version
-- **Version:** v1.1.0
+- **Version:** v1.2.0
 - **Project:** Synergy Turn Card Battle
 - **Owner Role:** Producer (Game Designer)
 - **Language:** Korean
-- **Last Updated:** 2026-02-14
+- **Last Updated:** 2026-02-15
 
 ## 1) Design Goal
-v1.1은 v1.0의 카드 100장 기반 전투를 유지하면서 **지역/적 확장 + 경로 분기 + 장기 런(10라운드)**을 제공한다.
+v1.2는 v1.1의 분기형 10라운드 전투를 유지하면서 **시너지 효과 명시 UI + localStorage 저장/이어하기 + 명예의 전당 통계 페이지**를 제공한다.
 
 ## 2) Scope
 
-### Scope In (v1.1)
+### Scope In (v1.2)
 - 상태 머신:
   - `ready`
   - `planning`
@@ -35,9 +35,19 @@ v1.1은 v1.0의 카드 100장 기반 전투를 유지하면서 **지역/적 확�
   - `보급 지점`: 플레이어 시작 드로우 +1
   - `요새 진입`: 플레이어 시작 방어 +7
   - `지형 우세`: 적 최대 HP -8
+- 시너지 정보 UI:
+  - Flame/Leaf/Gear/Void 발동 조건과 수치를 전투 화면에서 상시 노출.
+  - Burst(동일 문양 3회) 규칙과 점수 +15를 명시.
+- 저장/복원:
+  - localStorage 기반 자동 저장 (전투/보상/분기 상태).
+  - `이어하기`, `저장 초기화` 버튼 제공.
+- 명예의 전당:
+  - localStorage 기반 최근 30회 런 결과 기록.
+  - 승/패, 최종 점수, 최종 지역/적, 승리 기여 카드 기록 표시.
+  - 별도 페이지(`hall.html`)에서 통계 확인.
 
-### Scope Out (v1.1)
-- 저장/상점/맵 탐험 UI/멀티플레이.
+### Scope Out (v1.2)
+- 상점/맵 탐험 UI/멀티플레이/클라우드 저장.
 - 영구 메타 성장.
 - 카드 업그레이드 단계.
 
@@ -92,8 +102,17 @@ v1.1은 v1.0의 카드 100장 기반 전투를 유지하면서 **지역/적 확�
 - `index.html`
 - `style.css`
 - `game.js`
+- `hall.html`
+- `hall.js`
+- `src/storage.js`
 
 ## Change Log
+
+### v1.2.0 (2026-02-15)
+- 시너지 효과 안내 패널(문양별 발동 수치 + 버스트 규칙)을 전투 화면에 추가.
+- localStorage 자동 저장/이어하기/저장 초기화를 추가.
+- 명예의 전당 페이지(`hall.html`)를 추가해 최근 30회 런의 승패/점수/최종 적/주요 카드 기록을 제공.
+
 
 ### v1.1.0 (2026-02-14)
 - 상태 머신에 `routeSelect`를 추가하고 분기 경로 선택 단계를 구현.

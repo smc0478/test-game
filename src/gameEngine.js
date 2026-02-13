@@ -1,6 +1,7 @@
 import { CARD_LIBRARY, STARTER_DECK, REGIONS, ROUTE_TABLE, ROUTE_MODIFIERS, ENEMY_ARCHETYPES } from './data.js';
 import { STATES, SIGILS, MAX_ENERGY, MAX_HAND } from './constants.js';
 import { clamp, shuffle } from './utils.js';
+import { saveRunSnapshot, loadRunSnapshot, clearRunSnapshot, addHallOfFameRecord, hasSavedRun } from './storage.js';
 
 const cloneCard = (id) => ({ ...CARD_LIBRARY[id], effect: CARD_LIBRARY[id].effect.map((e) => ({ ...e })) });
 
@@ -37,6 +38,39 @@ export function createEngine(game, hooks) {
   const log = (msg, type = 'normal') => {
     game.logs.unshift(`[${new Date().toLocaleTimeString('ko-KR')}] ${msg}::${type}`);
     game.logs = game.logs.slice(0, 48);
+  };
+
+
+  const toRecord = (result) => ({
+    id: `${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+    result,
+    score: game.score,
+    round: game.round,
+    totalRounds: game.totalRounds,
+    finalRegion: game.region,
+    finalEnemy: game.enemy?.name || '-',
+    topCards: [...new Set(game.playedCardsHistory.map((c) => c.name))].slice(0, 5),
+    playedCount: game.playedCardsHistory.length,
+    createdAt: new Date().toISOString()
+  });
+
+  const persistGame = () => {
+    if ([STATES.READY, STATES.GAME_OVER, STATES.RUN_COMPLETE].includes(game.state)) {
+      clearRunSnapshot();
+      return;
+    }
+    saveRunSnapshot(game);
+  };
+
+  const hydrateActor = (actor) => ({
+    ...actor,
+    turnFamiliesUsed: actor.turnFamiliesUsed instanceof Set ? actor.turnFamiliesUsed : new Set(actor.turnFamiliesUsed || []),
+    lastTurnFamilies: actor.lastTurnFamilies instanceof Set ? actor.lastTurnFamilies : new Set(actor.lastTurnFamilies || [])
+  });
+
+  const renderAndPersist = () => {
+    onRender();
+    persistGame();
   };
 
   const draw = (actor, n) => {
@@ -305,7 +339,7 @@ export function createEngine(game, hooks) {
     chooseEnemyCard();
     game.state = STATES.PLAYER_TURN;
     game.activeSide = 'player';
-    onRender();
+    renderAndPersist();
   };
 
   const startRun = () => {
@@ -323,7 +357,7 @@ export function createEngine(game, hooks) {
     game.currentRoute = game.routeChoices[0];
     setupRound();
     log('런 시작');
-    onRender();
+    renderAndPersist();
   };
 
   const resolveRoundEnd = () => {
@@ -333,8 +367,10 @@ export function createEngine(game, hooks) {
       if (playerDead && enemyDead) game.score = 0;
       if (playerDead) {
         game.state = STATES.GAME_OVER;
+        addHallOfFameRecord(toRecord('패배'));
+        clearRunSnapshot();
         log('패배', 'bad');
-        onRender();
+        renderAndPersist();
         return;
       }
       game.score += 100;
@@ -344,6 +380,8 @@ export function createEngine(game, hooks) {
       if (game.round >= game.totalRounds) {
         game.state = STATES.RUN_COMPLETE;
         game.score += 200;
+        addHallOfFameRecord(toRecord('승리'));
+        clearRunSnapshot();
       } else {
         game.state = STATES.DECK_BUILD;
         const pool = shuffle(Object.keys(CARD_LIBRARY)).slice(0, 3);
@@ -351,7 +389,7 @@ export function createEngine(game, hooks) {
         game.rewardAccepted = false;
         game.routeChoices = getRouteCandidates();
       }
-      onRender();
+      renderAndPersist();
       return;
     }
 
@@ -360,7 +398,7 @@ export function createEngine(game, hooks) {
     chooseEnemyCard();
     beginTurn(game.player, true);
     game.state = STATES.PLAYER_TURN;
-    onRender();
+    renderAndPersist();
   };
 
   const playCardAt = (idx) => {
@@ -380,7 +418,7 @@ export function createEngine(game, hooks) {
     game.playedCardsHistory.unshift({ id: card.id, name: card.name });
     game.playedCardsHistory = game.playedCardsHistory.slice(0, 12);
     game.player.lastPlayedCardId = card.id;
-    onRender();
+    renderAndPersist();
     if (game.enemy.hp <= 0 || game.player.hp <= 0) {
       game.state = STATES.RESOLUTION;
       resolveRoundEnd();
@@ -393,7 +431,7 @@ export function createEngine(game, hooks) {
     game.discoverChoices = [];
     if (game.state === STATES.PLANNING) game.state = STATES.PLAYER_TURN;
     log(`아카이브 스캔으로 ${CARD_LIBRARY[cardId].name} 확보`);
-    onRender();
+    renderAndPersist();
   };
 
   const enemyTurn = () => {
@@ -403,7 +441,7 @@ export function createEngine(game, hooks) {
       game.state = STATES.PLAYER_TURN;
       game.activeSide = 'player';
       beginTurn(game.player, true);
-      onRender();
+      renderAndPersist();
       return;
     }
     const idx = game.enemy.hand.findIndex((c) => c.id === card.id);
@@ -415,7 +453,7 @@ export function createEngine(game, hooks) {
     game.enemy.lastPlayedCardId = card.id;
     game.enemy.lastTurnFamilies = new Set(game.enemy.turnFamiliesUsed);
     game.state = STATES.RESOLUTION;
-    onRender();
+    renderAndPersist();
     resolveRoundEnd();
   };
 
@@ -436,14 +474,14 @@ export function createEngine(game, hooks) {
     game.player.drawPile.push(cardId);
     game.rewardAccepted = true;
     log(`덱 강화: ${CARD_LIBRARY[cardId].name}`);
-    onRender();
+    renderAndPersist();
   };
 
   const skipReward = () => {
     if (game.state !== STATES.DECK_BUILD || game.rewardAccepted) return;
     game.rewardAccepted = true;
     log('보상 카드를 건너뛰었습니다.');
-    onRender();
+    renderAndPersist();
   };
 
   const removeDeckCard = (cardId) => {
@@ -456,13 +494,13 @@ export function createEngine(game, hooks) {
     game.removedInDeckBuild = true;
     game.score += 6;
     log(`덱 정리: ${CARD_LIBRARY[cardId].name} 제거`);
-    onRender();
+    renderAndPersist();
   };
 
   const finishDeckBuild = () => {
     if (game.state !== STATES.DECK_BUILD || !game.rewardAccepted) return;
     game.state = STATES.ROUTE_SELECT;
-    onRender();
+    renderAndPersist();
   };
 
   const selectRoute = (index) => {
@@ -474,8 +512,33 @@ export function createEngine(game, hooks) {
     setupRound();
   };
 
+
+  const resumeRun = () => {
+    const snapshot = loadRunSnapshot();
+    if (!snapshot) {
+      log('이어할 저장 데이터가 없습니다.', 'bad');
+      renderAndPersist();
+      return;
+    }
+    Object.assign(game, snapshot);
+    game.player = hydrateActor(game.player);
+    if (game.enemy) game.enemy = hydrateActor(game.enemy);
+    log('저장된 런을 이어합니다.');
+    renderAndPersist();
+  };
+
+  const resetSavedRun = () => {
+    clearRunSnapshot();
+    Object.assign(game, createGame());
+    game.logs.unshift(`[${new Date().toLocaleTimeString('ko-KR')}] 저장된 런을 초기화했습니다.::normal`);
+    game.logs = game.logs.slice(0, 48);
+    onRender();
+  };
+
   return {
     startRun,
+    resumeRun,
+    resetSavedRun,
     endPlayerTurn,
     playCardAt,
     chooseReward,
@@ -485,6 +548,7 @@ export function createEngine(game, hooks) {
     selectDiscoverCard,
     selectRoute,
     cloneCard,
-    log
+    log,
+    hasSavedRun
   };
 }
