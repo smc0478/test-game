@@ -14,7 +14,7 @@ function createActor({ name, hp, deckIds }) {
     activeSynergies: { Flame: false, Leaf: false, Gear: false, Void: false },
     comboChain: 0, lastSigil: null, turnScoreMultiplier: false,
     adrenalineTriggered: false, prismBurstTriggered: false, momentumTriggered: false,
-    intent: '준비'
+    intent: '준비', intentType: 'skill'
   };
 }
 
@@ -22,6 +22,7 @@ export function createGame() {
   return {
     state: STATES.READY, round: 0, totalRounds: 6, activeSide: 'player',
     region: '-', score: 0, deck: [...STARTER_DECK], rewardChoices: [],
+    rewardAccepted: false, removedInDeckBuild: false, discoverChoices: [],
     logs: ['대기 중: 런 시작 버튼을 누르세요.'],
     player: createActor({ name: '플레이어', hp: 72, deckIds: STARTER_DECK }),
     enemy: null
@@ -76,6 +77,17 @@ export function createEngine(game, hooks) {
     return real;
   };
 
+  const removeCardEverywhere = (cardId) => {
+    const removeOnce = (pile) => {
+      const index = pile.findIndex((idOrCard) => (typeof idOrCard === 'string' ? idOrCard : idOrCard.id) === cardId);
+      if (index >= 0) pile.splice(index, 1);
+    };
+    removeOnce(game.deck);
+    removeOnce(game.player.drawPile);
+    removeOnce(game.player.discardPile);
+    removeOnce(game.player.hand);
+  };
+
   const updateSynergy = (actor, card) => {
     actor.sigilCounts[card.sigil] += 1;
     actor.turnFamiliesUsed.add(card.family);
@@ -86,7 +98,10 @@ export function createEngine(game, hooks) {
     SIGILS.forEach((sigil) => { actor.activeSynergies[sigil] = actor.sigilCounts[sigil] >= 2; });
     const activeCount = SIGILS.filter((s) => actor.activeSynergies[s]).length;
     if (activeCount >= 2 && !actor.adrenalineTriggered) {
-      actor.energy += 1; draw(actor, 1); game.score += 12; actor.adrenalineTriggered = true;
+      actor.energy += 1;
+      draw(actor, 1);
+      game.score += 12;
+      actor.adrenalineTriggered = true;
       log(`${actor.name} 아드레날린 발동`);
     }
     if (new Set(SIGILS.filter((s) => actor.sigilCounts[s] > 0)).size === 4) {
@@ -109,6 +124,10 @@ export function createEngine(game, hooks) {
     }
     if (effect.kind === 'ifEnemyIntent') {
       if (target.intentType === effect.intent) effect.then.forEach((e) => applyEffect(source, target, e, card));
+      return;
+    }
+    if (effect.kind === 'ifEnemyHpBelow') {
+      if (target.hp <= effect.value) effect.then.forEach((e) => applyEffect(source, target, e, card));
       return;
     }
 
@@ -134,6 +153,20 @@ export function createEngine(game, hooks) {
       target.intentType = target.intentType === 'attack' ? 'skill' : 'attack';
       target.intent = target.intentType === 'attack' ? '공격 준비' : '방어 준비';
     }
+    if (effect.kind === 'convertBlockToDamage') {
+      const burst = source.block;
+      source.block = 0;
+      if (burst > 0) {
+        applyDamage(target, burst);
+        log(`${source.name} 방어 전환 ${burst} 피해`);
+      }
+    }
+    if (effect.kind === 'discover') {
+      const pool = shuffle(Object.keys(CARD_LIBRARY).filter((id) => id !== card.id)).slice(0, effect.value || 3);
+      game.discoverChoices = pool.map(cloneCard);
+      game.state = STATES.PLANNING;
+      log('아카이브 스캔: 도감에서 임시 카드 선택');
+    }
   };
 
   const chooseEnemyCard = () => {
@@ -153,6 +186,8 @@ export function createEngine(game, hooks) {
     const enemyInfo = ENEMY_ARCHETYPES[enemyId];
     game.region = region.name;
     game.enemy = createActor({ name: enemyInfo.name, hp: enemyInfo.hp, deckIds: enemyInfo.deck });
+    game.rewardAccepted = false;
+    game.removedInDeckBuild = false;
     beginTurn(game.player, true);
     beginTurn(game.enemy, false);
     game.state = STATES.PLANNING;
@@ -167,6 +202,7 @@ export function createEngine(game, hooks) {
     game.score = 0;
     game.deck = [...STARTER_DECK];
     game.player = createActor({ name: '플레이어', hp: 72, deckIds: game.deck });
+    game.discoverChoices = [];
     setupRound();
     log('런 시작');
     onRender();
@@ -177,7 +213,12 @@ export function createEngine(game, hooks) {
     const enemyDead = game.enemy.hp <= 0;
     if (playerDead || enemyDead) {
       if (playerDead && enemyDead) game.score = 0;
-      if (playerDead) { game.state = STATES.GAME_OVER; log('패배', 'bad'); onRender(); return; }
+      if (playerDead) {
+        game.state = STATES.GAME_OVER;
+        log('패배', 'bad');
+        onRender();
+        return;
+      }
       game.score += 100;
       if (game.player.hp >= 40) game.score += 30;
       game.round += 1;
@@ -189,6 +230,7 @@ export function createEngine(game, hooks) {
         game.state = STATES.DECK_BUILD;
         const pool = shuffle(Object.keys(CARD_LIBRARY)).slice(0, 3);
         game.rewardChoices = pool.map(cloneCard);
+        game.rewardAccepted = false;
       }
       onRender();
       return;
@@ -209,7 +251,8 @@ export function createEngine(game, hooks) {
     game.player.discardPile.push(card.id);
     scoreAction(card);
     if (game.player.turnFamiliesUsed.size >= 2 && !game.player.momentumTriggered && game.player.hand.length <= 2) {
-      game.player.energy += 1; game.player.momentumTriggered = true;
+      game.player.energy += 1;
+      game.player.momentumTriggered = true;
     }
     updateSynergy(game.player, card);
     card.effect.forEach((effect) => applyEffect(game.player, game.enemy, effect, card));
@@ -218,6 +261,15 @@ export function createEngine(game, hooks) {
       game.state = STATES.RESOLUTION;
       resolveState();
     }
+  };
+
+  const selectDiscoverCard = (cardId) => {
+    if (!game.discoverChoices.length) return;
+    game.player.hand.push(cloneCard(cardId));
+    game.discoverChoices = [];
+    if (game.state === STATES.PLANNING) game.state = STATES.PLAYER_TURN;
+    log(`아카이브 스캔으로 ${CARD_LIBRARY[cardId].name} 확보`);
+    onRender();
   };
 
   const enemyTurn = () => {
@@ -240,10 +292,7 @@ export function createEngine(game, hooks) {
     game.state = STATES.RESOLUTION;
     onRender();
     resolveState();
-    if (game.state === STATES.ENEMY_TURN) return;
-    if (game.state === STATES.PLAYER_TURN) return;
-    if (game.state === STATES.RESOLUTION) return;
-    if (game.state === STATES.GAME_OVER || game.state === STATES.RUN_COMPLETE || game.state === STATES.DECK_BUILD) return;
+    if ([STATES.ENEMY_TURN, STATES.PLAYER_TURN, STATES.RESOLUTION, STATES.GAME_OVER, STATES.RUN_COMPLETE, STATES.DECK_BUILD].includes(game.state)) return;
     beginTurn(game.player, true);
     game.state = STATES.PLAYER_TURN;
     game.activeSide = 'player';
@@ -261,12 +310,49 @@ export function createEngine(game, hooks) {
   };
 
   const chooseReward = (cardId) => {
+    if (game.state !== STATES.DECK_BUILD || game.rewardAccepted) return;
     game.deck.push(cardId);
     game.player.drawPile.push(cardId);
-    game.state = STATES.PLANNING;
-    setupRound();
+    game.rewardAccepted = true;
     log(`덱 강화: ${CARD_LIBRARY[cardId].name}`);
+    onRender();
   };
 
-  return { startRun, endPlayerTurn, playCardAt, chooseReward, cloneCard, log };
+  const skipReward = () => {
+    if (game.state !== STATES.DECK_BUILD || game.rewardAccepted) return;
+    game.rewardAccepted = true;
+    log('보상 카드를 건너뛰었습니다.');
+    onRender();
+  };
+
+  const removeDeckCard = (cardId) => {
+    if (game.state !== STATES.DECK_BUILD || game.removedInDeckBuild) return;
+    if (game.deck.length <= 5) {
+      log('덱이 너무 얇아 더 이상 제거할 수 없습니다.', 'bad');
+      return;
+    }
+    removeCardEverywhere(cardId);
+    game.removedInDeckBuild = true;
+    game.score += 6;
+    log(`덱 정리: ${CARD_LIBRARY[cardId].name} 제거`);
+    onRender();
+  };
+
+  const finishDeckBuild = () => {
+    if (game.state !== STATES.DECK_BUILD || !game.rewardAccepted) return;
+    setupRound();
+  };
+
+  return {
+    startRun,
+    endPlayerTurn,
+    playCardAt,
+    chooseReward,
+    skipReward,
+    removeDeckCard,
+    finishDeckBuild,
+    selectDiscoverCard,
+    cloneCard,
+    log
+  };
 }

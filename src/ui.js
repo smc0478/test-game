@@ -1,4 +1,5 @@
 import { SIGILS, STATES } from './constants.js';
+import { CARD_LIBRARY } from './data.js';
 
 const effectText = (effect) => {
   const map = {
@@ -14,12 +15,22 @@ const effectText = (effect) => {
     drain: `흡혈 ${effect.value}`,
     selfDamage: `자가 피해 ${effect.value}`,
     echoAttack: `동명 공명 +${effect.value}`,
-    swapIntent: '적 의도 전환'
+    swapIntent: '적 의도 전환',
+    convertBlockToDamage: '내 방어도 전량을 피해로 전환',
+    discover: `도감에서 후보 ${effect.value}장 제시`
   };
   if (effect.kind === 'ifLastTurnFamily') return `전 턴 ${effect.family}: ${effect.then.map(effectText).join(' + ')}`;
   if (effect.kind === 'ifEnemyIntent') return `적 의도(${effect.intent})일 때: ${effect.then.map(effectText).join(' + ')}`;
+  if (effect.kind === 'ifEnemyHpBelow') return `적 HP ${effect.value} 이하일 때: ${effect.then.map(effectText).join(' + ')}`;
   return map[effect.kind] || effect.kind;
 };
+
+const cardTemplate = (card) => `<img class='card-art' src='${card.image}' alt='${card.name}' />
+<h3>${card.name}</h3>
+<p>${card.id} | ${card.sigil} | ${card.type}</p>
+<p>패밀리: ${card.family} | 코스트 ${card.energyCost}</p>
+<p>효과: ${card.effect.map(effectText).join(', ')}</p>
+<p class='small'>설명: ${card.description || '설명 없음'}</p>`;
 
 export function createUiBindings() {
   return {
@@ -48,6 +59,12 @@ export function createUiBindings() {
     deckSize: document.querySelector('#deck-size'),
     rewardPanel: document.querySelector('#reward-panel'),
     rewardCards: document.querySelector('#reward-cards'),
+    skipRewardBtn: document.querySelector('#skip-reward-btn'),
+    finishDeckBuildBtn: document.querySelector('#finish-deck-build-btn'),
+    removeDeckCards: document.querySelector('#remove-deck-cards'),
+    codexCards: document.querySelector('#codex-cards'),
+    discoverPanel: document.querySelector('#discover-panel'),
+    discoverCards: document.querySelector('#discover-cards'),
     log: document.querySelector('#log')
   };
 }
@@ -78,7 +95,7 @@ export function render(ui, game, actions) {
   game.player.hand.forEach((card, idx) => {
     const wrap = document.createElement('article');
     wrap.className = 'card';
-    wrap.innerHTML = `<img class='card-art' src='${card.image}' alt='${card.name}' /><h3>${card.name}</h3><p>${card.id} | ${card.sigil} | ${card.type}</p><p>패밀리: ${card.family} | 코스트 ${card.energyCost}</p><p>효과: ${card.effect.map(effectText).join(', ')}</p>`;
+    wrap.innerHTML = cardTemplate(card);
     const btn = document.createElement('button');
     btn.className = 'play-btn';
     btn.textContent = '사용';
@@ -98,17 +115,60 @@ export function render(ui, game, actions) {
 
   ui.rewardPanel.classList.toggle('hidden', game.state !== STATES.DECK_BUILD);
   ui.rewardCards.innerHTML = '';
+  ui.removeDeckCards.innerHTML = '';
   if (game.state === STATES.DECK_BUILD) {
     game.rewardChoices.forEach((card) => {
       const node = document.createElement('article');
       node.className = 'card';
-      node.innerHTML = `<img class='card-art' src='${card.image}' alt='${card.name}' /><h3>${card.name}</h3><p>${card.effect.map(effectText).join(', ')}</p>`;
+      node.innerHTML = cardTemplate(card);
       const b = document.createElement('button');
       b.className = 'play-btn';
-      b.textContent = '선택';
+      b.textContent = '보상 선택';
+      b.disabled = game.rewardAccepted;
       b.addEventListener('click', () => actions.chooseReward(card.id));
       node.appendChild(b);
       ui.rewardCards.appendChild(node);
+    });
+
+    const groupedDeck = game.deck.map((id, index) => ({ id, index, card: CARD_LIBRARY[id] }));
+    groupedDeck.forEach(({ id, index, card }) => {
+      const row = document.createElement('div');
+      row.className = 'deck-row';
+      row.innerHTML = `<span>${index + 1}. ${card.name} (${id})</span>`;
+      const rm = document.createElement('button');
+      rm.textContent = '제거';
+      rm.disabled = game.removedInDeckBuild;
+      rm.addEventListener('click', () => actions.removeDeckCard(id));
+      row.appendChild(rm);
+      ui.removeDeckCards.appendChild(row);
+    });
+
+    ui.skipRewardBtn.disabled = game.rewardAccepted;
+    ui.finishDeckBuildBtn.disabled = !game.rewardAccepted;
+  }
+
+  ui.codexCards.innerHTML = '';
+  Object.values(CARD_LIBRARY).forEach((card) => {
+    const node = document.createElement('article');
+    node.className = 'card mini';
+    node.innerHTML = cardTemplate(card);
+    ui.codexCards.appendChild(node);
+  });
+
+  const discovering = game.discoverChoices.length > 0;
+  ui.discoverPanel.classList.toggle('hidden', !discovering);
+  ui.discoverCards.innerHTML = '';
+  if (discovering) {
+    game.discoverChoices.forEach((card) => {
+      const node = document.createElement('article');
+      node.className = 'card';
+      node.innerHTML = cardTemplate(card);
+      const b = document.createElement('button');
+      b.className = 'play-btn';
+      b.textContent = '손패로 가져오기';
+      b.addEventListener('click', () => actions.selectDiscoverCard(card.id));
+      node.appendChild(b);
+      ui.discoverCards.appendChild(node);
     });
   }
 
