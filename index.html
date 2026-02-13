@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>시너지 턴 카드 배틀 v0.6</title>
+  <title>시너지 턴 카드 배틀 v0.7</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="app">
     <header class="top-bar">
       <div>
-        <h1>시너지 턴 카드 배틀 v0.6</h1>
-        <p class="subtitle">패밀리 공명/전 턴 기억이 추가된 라운드 러닝 모드</p>
+        <h1>시너지 턴 카드 배틀 v0.7</h1>
+        <p class="subtitle">의도 대응 + 카드 도감 + 덱 정리 루프를 포함한 러닝 모드</p>
       </div>
       <div class="controls">
         <button id="start-btn">런 시작</button>
@@ -57,10 +57,29 @@
       <p class="small">드로우: <span id="player-draw">0</span> | 버림: <span id="player-discard">0</span> | 덱: <span id="deck-size">0</span></p>
     </section>
 
+    <section id="discover-panel" class="panel hidden">
+      <h2>아카이브 스캔 결과 (임시 획득)</h2>
+      <p class="small">카드 도감에서 1장을 선택해 즉시 손패에 추가합니다.</p>
+      <div id="discover-cards" class="hand"></div>
+    </section>
+
     <section id="reward-panel" class="panel hidden">
       <h2>라운드 보상 - 덱 빌딩</h2>
-      <p class="small">카드 1장을 선택해 덱에 추가하세요.</p>
+      <p class="small">1) 보상 카드를 선택하거나 건너뛰고, 2) 원하면 덱에서 카드 1장을 제거한 뒤 다음 전투로 이동하세요.</p>
+      <div class="controls">
+        <button id="skip-reward-btn">보상 건너뛰기</button>
+        <button id="finish-deck-build-btn" disabled>다음 전투</button>
+      </div>
+      <h3>보상 후보</h3>
       <div id="reward-cards" class="hand"></div>
+      <h3>현재 덱 (불필요 카드 제거 가능)</h3>
+      <div id="remove-deck-cards" class="deck-list"></div>
+    </section>
+
+    <section class="panel">
+      <h2>카드 도감</h2>
+      <p class="small">게임에 등장하는 전체 카드를 확인할 수 있습니다.</p>
+      <div id="codex-cards" class="hand"></div>
     </section>
 
     <section class="panel">

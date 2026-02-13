@@ -10,5 +10,7 @@ const engine = createEngine(game, {
 
 ui.startBtn.addEventListener('click', engine.startRun);
 ui.endTurnBtn.addEventListener('click', engine.endPlayerTurn);
+ui.skipRewardBtn.addEventListener('click', engine.skipReward);
+ui.finishDeckBuildBtn.addEventListener('click', engine.finishDeckBuild);
 
 render(ui, game, engine);

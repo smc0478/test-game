@@ -1,5 +1,18 @@
 # Project Changelog
 
+## v0.7.0
+### Added
+- 신규 카드 5장(C027~C031) 및 신규 효과(`ifEnemyHpBelow`, `convertBlockToDamage`, `discover`)를 추가.
+- 라운드 보상 단계에 `보상 건너뛰기`, `덱 카드 1장 제거`, `다음 전투 이동` 절차를 추가.
+- 전체 카드 목록/효과/설명을 확인할 수 있는 카드 도감 UI를 추가.
+
+### Changed
+- 카드 데이터에 `description` 필드를 추가해 UI에 친절한 효과 설명을 표시.
+- 카드 아트 SVG를 카드 프레임 스타일로 개선.
+
+### Fixed
+- 전투 중 `discover` 효과로 임시 카드 선택 시 상태가 꼬이지 않도록 별도 선택 패널 흐름으로 정리.
+
 ## v0.6.0
 ### Added
 - `planning` 상태를 추가해 적 의도를 플레이어 턴 전에 확정/표시하도록 변경.
