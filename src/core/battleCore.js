@@ -18,6 +18,7 @@ function createActor({ name, hp, deckIds }) {
     sigilBurstTriggered: { Flame: false, Leaf: false, Gear: false, Void: false },
     turnCardNameCounts: {},
     pendingNextAttackBonus: 0,
+    blockRetainTurns: 0,
     intent: '준비', intentType: 'skill', intentDamage: null, lastPlayedCardId: null,
     archetypeId: null,
     threatLevel: 1,
@@ -122,7 +123,11 @@ export function createEngine(game, hooks) {
       actor.discardPile.push(...actor.hand.map((card) => card.id));
       actor.hand = [];
     }
-    actor.block = 0;
+    if (actor.blockRetainTurns > 0) {
+      actor.blockRetainTurns -= 1;
+    } else {
+      actor.block = 0;
+    }
     const baseEnergy = MAX_ENERGY + (isPlayer ? 0 : (actor.extraEnergyPerTurn || 0));
     actor.energy = isPlayer ? baseEnergy : getEnemyTurnEnergy(baseEnergy);
     actor.turnFamilyCounts = {};
@@ -197,6 +202,7 @@ export function createEngine(game, hooks) {
         total += repeat * effect.value;
       }
       if (effect.kind === 'convertBlockToDamage') total += source.block;
+      if (effect.kind === 'attackFromBlock') total += source.block;
       if (effect.kind === 'echoAttack' && ((source.turnFamilyCounts?.[card.family] || 0) + 1) > 1) total += effect.value;
       if (effect.kind === 'ifEnemyIntent' && target.intentType === effect.intent) {
         const nested = effectListAttack(effect.then || [], source, target, card);
@@ -351,6 +357,15 @@ export function createEngine(game, hooks) {
         log(`${source.name} 공명 추가 피해 ${dealt} (반복 ${repeat}회)`);
       }
     }
+    if (effect.kind === 'nameRepeatBlockBonus') {
+      const used = source.turnCardNameCounts[card.name] || 0;
+      const repeat = Math.max(0, used - 1);
+      const extra = repeat * effect.value;
+      if (extra > 0) {
+        source.block += extra;
+        log(`${source.name} 연쇄 방진 추가 방어 ${extra} (반복 ${repeat}회)`);
+      }
+    }
     if (effect.kind === 'nextAttackBonus') {
       source.pendingNextAttackBonus = (source.pendingNextAttackBonus || 0) + effect.value;
       log(`${source.name} 다음 공격 강화 +${effect.value}`);
@@ -366,6 +381,10 @@ export function createEngine(game, hooks) {
     if (effect.kind === 'thorns') source.thorns += effect.value;
     if (effect.kind === 'selfDamage') applyDamage(source, effect.value);
     if (effect.kind === 'echoAttack' && source.turnFamilyCounts[card.family] > 1) applyDamage(target, effect.value);
+    if (effect.kind === 'attackFromBlock') {
+      const dealt = applyDamage(target, source.block);
+      log(`${source.name} 방어 반격 ${dealt}`);
+    }
     if (effect.kind === 'swapIntent') {
       target.intentType = target.intentType === 'attack' ? 'skill' : 'attack';
       target.intent = target.intentType === 'attack' ? '공격 준비' : '방어 준비';
@@ -383,6 +402,10 @@ export function createEngine(game, hooks) {
       game.discoverChoices = pool.map(cloneCard);
       game.state = STATES.PLANNING;
       log('아카이브 스캔: 도감에서 임시 카드 선택');
+    }
+    if (effect.kind === 'retainBlockTurns') {
+      source.blockRetainTurns = Math.max(source.blockRetainTurns, effect.value);
+      log(`${source.name} 방어 유지 ${effect.value}턴`);
     }
 
     if (effect.kind === 'rewind') {

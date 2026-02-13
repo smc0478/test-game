@@ -18,6 +18,7 @@ const effectText = (effect) => {
     reduceBlock: `적 방어 -${effect.value}`,
     heal: `회복 ${effect.value}`,
     gainEnergy: `에너지 +${effect.value}`,
+    nameRepeatBlockBonus: `동일 이름 반복당 +${effect.value} 방어`,
     thorns: `가시 ${effect.value}`,
     vulnerable: `취약 ${effect.value}`,
     drain: `흡혈 ${effect.value}`,
@@ -25,6 +26,8 @@ const effectText = (effect) => {
     echoAttack: `동명 공명 +${effect.value}`,
     swapIntent: '적 의도 전환',
     convertBlockToDamage: '내 방어도 전량을 피해로 전환',
+    attackFromBlock: '현재 방어도만큼 공격',
+    retainBlockTurns: `방어도 유지 ${effect.value}턴`,
     discover: `도감에서 후보 ${effect.value}장 제시`,
     rewind: '직전 사용 카드 효과 재발동',
     gamble: '무작위 결과 1개 발동'
