@@ -35,15 +35,15 @@ function cardDef(data) {
 
 const CARD_POOL = Object.freeze([
   cardDef({ id: "C001", name: "Ember Strike", type: "attack", energyCost: 1, baseValue: 7, sigil: "Flame" }),
-  cardDef({ id: "C002", name: "Ember Strike+", type: "attack", energyCost: 1, baseValue: 9, sigil: "Flame" }),
+  cardDef({ id: "C002", name: "Blaze Rush", type: "attack", energyCost: 1, baseValue: 8, sigil: "Flame" }),
   cardDef({ id: "C003", name: "Thorn Jab", type: "attack", energyCost: 1, baseValue: 6, sigil: "Leaf" }),
   cardDef({ id: "C004", name: "Cog Shot", type: "attack", energyCost: 1, baseValue: 6, sigil: "Gear" }),
-  cardDef({ id: "C005", name: "Null Pierce", type: "attack", energyCost: 1, baseValue: 5, sigil: "Void" }),
+  cardDef({ id: "C005", name: "Null Pierce", type: "attack", energyCost: 1, baseValue: 6, sigil: "Void" }),
   cardDef({ id: "C006", name: "Bark Guard", type: "skill", energyCost: 1, baseValue: 8, sigil: "Leaf" }),
   cardDef({ id: "C007", name: "Clockwork Guard", type: "skill", energyCost: 1, baseValue: 7, sigil: "Gear" }),
-  cardDef({ id: "C008", name: "Spark Cycle", type: "skill", energyCost: 1, baseValue: 1, sigil: "Gear" }),
-  cardDef({ id: "C009", name: "Ashen Focus", type: "skill", energyCost: 1, baseValue: 2, sigil: "Flame" }),
-  cardDef({ id: "C010", name: "Void Echo", type: "skill", energyCost: 1, baseValue: 2, sigil: "Void" }),
+  cardDef({ id: "C008", name: "Spark Cycle", type: "skill", energyCost: 1, baseValue: 2, sigil: "Gear" }),
+  cardDef({ id: "C009", name: "Ashen Focus", type: "skill", energyCost: 1, baseValue: 3, sigil: "Flame" }),
+  cardDef({ id: "C010", name: "Void Echo", type: "skill", energyCost: 1, baseValue: 3, sigil: "Void" }),
   cardDef({ id: "C011", name: "Verdant Pulse", type: "skill", energyCost: 2, baseValue: 12, sigil: "Leaf" }),
   cardDef({ id: "C012", name: "Abyss Cut", type: "attack", energyCost: 2, baseValue: 12, sigil: "Void" })
 ]);
@@ -79,8 +79,8 @@ const game = {
   state: STATE_READY,
   turn: 0,
   score: 0,
-  player: createActor("플레이어", 60, buildDeck(CARD_POOL.map((card) => card.id))),
-  enemy: createActor("훈련 오토마톤", 70, buildDeck(CARD_POOL.map((card) => card.id))),
+  player: createActor("플레이어", 64, buildDeck(CARD_POOL.map((card) => card.id))),
+  enemy: createActor("훈련 오토마톤", 78, buildDeck(CARD_POOL.map((card) => card.id))),
   activeSide: "player"
 };
 
@@ -98,10 +98,15 @@ function createActor(name, maxHp, deck) {
     nextAttackBonus: 0,
     sigilCounts: makeSigilCounter(),
     activeSynergies: { Flame: false, Leaf: false, Gear: false, Void: false },
+    activatedSynergiesThisTurn: new Set(),
     turnScoreMultiplier: false,
     fullSpectrumAwarded: false,
     cardsPlayedThisTurn: 0,
-    momentumTriggered: false
+    momentumTriggered: false,
+    adrenalineTriggered: false,
+    comboChain: 0,
+    lastSigil: null,
+    prismBurstTriggered: false
   };
 }
 
@@ -171,8 +176,8 @@ function startBattle() {
   game.state = STATE_READY;
   game.turn = 0;
   game.score = 0;
-  game.player = createActor("플레이어", 60, buildDeck(CARD_POOL.map((c) => c.id)));
-  game.enemy = createActor("훈련 오토마톤", 70, buildDeck(CARD_POOL.map((c) => c.id)));
+  game.player = createActor("플레이어", 64, buildDeck(CARD_POOL.map((c) => c.id)));
+  game.enemy = createActor("훈련 오토마톤", 78, buildDeck(CARD_POOL.map((c) => c.id)));
 
   [game.player, game.enemy].forEach((actor) => {
     actor.drawPile = shuffle(actor.deck);
@@ -191,10 +196,15 @@ function startTurn(actor) {
   actor.nextAttackBonus = 0;
   actor.sigilCounts = makeSigilCounter();
   actor.activeSynergies = { Flame: false, Leaf: false, Gear: false, Void: false };
+  actor.activatedSynergiesThisTurn = new Set();
   actor.turnScoreMultiplier = false;
   actor.fullSpectrumAwarded = false;
   actor.cardsPlayedThisTurn = 0;
   actor.momentumTriggered = false;
+  actor.adrenalineTriggered = false;
+  actor.comboChain = 0;
+  actor.lastSigil = null;
+  actor.prismBurstTriggered = false;
   drawCards(actor, 5);
 }
 
@@ -224,32 +234,86 @@ function applyDamage(target, amount) {
   target.hp = Math.max(0, target.hp - remaining);
 }
 
+function comboScoreBonus(chain) {
+  if (chain >= 4) return 8;
+  if (chain >= 3) return 4;
+  return 0;
+}
+
 function applyScoreForCard(actor, card, synergyActiveForCard) {
   if (actor !== game.player) return;
   let gain = card.type === "attack" ? 10 : 8;
   if (card.sigil === "Void" && synergyActiveForCard) gain = Math.floor(gain * 1.5);
   if (actor.turnScoreMultiplier) gain = Math.floor(gain * 2);
+
+  gain += comboScoreBonus(actor.comboChain);
+
   game.score += gain;
   log(`점수 +${gain} (${card.name})`, "good");
 }
 
 function maybeActivateSynergy(actor, sigil) {
   actor.sigilCounts[sigil] += 1;
+  let newlyActivatedSigil = null;
+
   if (actor.sigilCounts[sigil] >= 2 && !actor.activeSynergies[sigil]) {
     actor.activeSynergies[sigil] = true;
+    newlyActivatedSigil = sigil;
+    actor.activatedSynergiesThisTurn.add(sigil);
     log(`${actor.name}: ${sigil} 시너지 활성화`, "good");
   }
 
   if (!actor.turnScoreMultiplier && SIGILS.every((name) => actor.sigilCounts[name] >= 1)) {
     actor.turnScoreMultiplier = true;
     if (!actor.fullSpectrumAwarded && actor === game.player) {
-      game.score += 25;
+      game.score += 30;
       actor.fullSpectrumAwarded = true;
-      log("풀 스펙트럼 달성: +25, 이번 턴 점수 x2", "good");
+      log("풀 스펙트럼 달성: +30, 이번 턴 점수 x2", "good");
     }
   }
 
-  return actor.sigilCounts[sigil] >= 2;
+  return { synergyActiveForCard: actor.sigilCounts[sigil] >= 2, newlyActivatedSigil };
+}
+
+function updateCombo(actor, sigil) {
+  if (!actor.lastSigil) {
+    actor.comboChain = 1;
+  } else if (actor.lastSigil === sigil) {
+    actor.comboChain = 1;
+  } else {
+    actor.comboChain = Math.min(4, actor.comboChain + 1);
+  }
+
+  actor.lastSigil = sigil;
+  log(`${actor.name}: 콤보 체인 ${actor.comboChain}`, "good");
+}
+
+function triggerPrismBurst(actor, target) {
+  if (actor.prismBurstTriggered || actor.comboChain < 4) return;
+  actor.prismBurstTriggered = true;
+
+  applyDamage(target, 8);
+  actor.block += 8;
+  log(`${actor.name}: 프리즘 버스트 발동! 피해 8 + 방어 8`, "good");
+
+  if (actor === game.player) {
+    game.score += 20;
+    log("프리즘 버스트 보너스: 점수 +20", "good");
+  }
+}
+
+function maybeTriggerAdrenaline(actor) {
+  if (actor.adrenalineTriggered || actor.activatedSynergiesThisTurn.size < 2) return;
+  actor.adrenalineTriggered = true;
+
+  actor.energy += 1;
+  drawCards(actor, 1);
+  log(`${actor.name}: 아드레날린 발동(+1 에너지, 1드로우)`, "good");
+
+  if (actor === game.player) {
+    game.score += 12;
+    log("아드레날린 보너스: 점수 +12", "good");
+  }
 }
 
 function resolveCard(actor, target, handIndex) {
@@ -267,10 +331,14 @@ function resolveCard(actor, target, handIndex) {
     log(`${actor.name}: 모멘텀 발동(+1 에너지)`, "good");
   }
 
-  const synergyActiveForCard = maybeActivateSynergy(actor, card.sigil);
+  updateCombo(actor, card.sigil);
+  const { synergyActiveForCard } = maybeActivateSynergy(actor, card.sigil);
 
   const effect = computeCardEffect(card, actor, target, synergyActiveForCard);
   applyEffect(effect, actor, target, card);
+
+  triggerPrismBurst(actor, target);
+  maybeTriggerAdrenaline(actor);
   applyScoreForCard(actor, card, synergyActiveForCard);
 
   if (card.sigil === "Gear" && synergyActiveForCard) {
@@ -351,7 +419,10 @@ function getPlayableCards(actor) {
 
 function estimateDamage(actor, card) {
   if (card.type !== "attack") return 0;
-  return card.baseValue + actor.nextAttackBonus;
+  let damage = card.baseValue + actor.nextAttackBonus;
+  const projectedCount = actor.sigilCounts[card.sigil] + 1;
+  if (card.sigil === "Flame" && projectedCount >= 2) damage += 3;
+  return damage;
 }
 
 function enemyChooseCard(actor, target) {
@@ -411,8 +482,8 @@ function resolveBattleState() {
   }
 
   if (enemyDead) {
-    game.score += 120;
-    if (game.player.hp >= 40) game.score += 40;
+    game.score += 140;
+    if (game.player.hp >= 40) game.score += 50;
     transitionTo(STATE_GAME_OVER);
     return;
   }
@@ -459,6 +530,16 @@ function renderSynergy(actor) {
   multiplier.className = "synergy-badge";
   multiplier.textContent = `턴 점수 x2: ${actor.turnScoreMultiplier ? "ON" : "OFF"}`;
   ui.synergyInfo.appendChild(multiplier);
+
+  const combo = document.createElement("div");
+  combo.className = "synergy-badge";
+  combo.textContent = `콤보 체인: ${actor.comboChain}`;
+  ui.synergyInfo.appendChild(combo);
+
+  const burst = document.createElement("div");
+  burst.className = "synergy-badge";
+  burst.textContent = `프리즘 버스트: ${actor.prismBurstTriggered ? "사용" : "대기"}`;
+  ui.synergyInfo.appendChild(burst);
 }
 
 function render() {
