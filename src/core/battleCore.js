@@ -735,10 +735,6 @@ export function createEngine(game, hooks) {
     game.player.hand.splice(idx, 1);
     game.player.discardPile.push(card.id);
     scoreAction(card);
-    if (game.player.turnFamiliesUsed.size >= 2 && !game.player.momentumTriggered && game.player.hand.length <= 2) {
-      game.player.energy += 1;
-      game.player.momentumTriggered = true;
-    }
     updateSynergy(game.player, card);
     game.player.turnCardNameCounts[card.name] = (game.player.turnCardNameCounts[card.name] || 0) + 1;
     card.effect.forEach((effect) => applyEffect(game.player, game.enemy, effect, card));
