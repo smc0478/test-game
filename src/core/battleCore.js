@@ -154,10 +154,20 @@ export function createEngine(game, hooks) {
     const attackBase = effectListAttack(card.effect, source, target, card);
     if (attackBase === null) return null;
     const buffBonus = source.attackBuff;
-    const flameBonus = source.activeSynergies.Flame ? 5 : 0;
-    const voidBonus = source.activeSynergies.Void ? 3 : 0;
+    const projectedSigilCount = (source.sigilCounts?.[card.sigil] || 0) + 1;
+    const flameBonus = (source.activeSynergies.Flame || (card.sigil === 'Flame' && projectedSigilCount >= 2)) ? 5 : 0;
+    const voidBonus = (source.activeSynergies.Void || (card.sigil === 'Void' && projectedSigilCount >= 2)) ? 3 : 0;
     const vulnerableBonus = target.vulnerable > 0 ? 2 : 0;
-    return Math.max(0, attackBase + buffBonus + flameBonus + voidBonus + vulnerableBonus);
+
+    const comboChainBonus = source.lastSigil && source.lastSigil !== card.sigil
+      ? Math.min(4, source.comboChain + 1)
+      : source.comboChain;
+    const prismBurstDamage = comboChainBonus >= 3 && !source.prismBurstTriggered ? 8 : 0;
+    const sigilBurstDamage = projectedSigilCount >= 4 && !source.sigilBurstTriggered?.[card.sigil]
+      ? (card.sigil === 'Flame' ? 12 : card.sigil === 'Void' ? 10 : 0)
+      : 0;
+
+    return Math.max(0, attackBase + buffBonus + flameBonus + voidBonus + vulnerableBonus + prismBurstDamage + sigilBurstDamage);
   };
 
   const effectListAttack = (effects, source, target, card) => {
