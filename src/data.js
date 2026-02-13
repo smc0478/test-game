@@ -21,7 +21,8 @@ const art = (name, sigil) => {
     <text x='24' y='74' font-size='16' fill='white' font-family='sans-serif'>문양: ${sigil}</text>
     <text x='24' y='156' font-size='14' fill='#0f172a' font-family='sans-serif'>전투 카드 아트</text>
   </svg>`;
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  const encoded = btoa(unescape(encodeURIComponent(svg)));
+  return `data:image/svg+xml;base64,${encoded}`;
 };
 
 const c = (id, name, family, type, energyCost, baseValue, sigil, effect, description) => ({
