@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>시너지 턴 카드 배틀 v1.5</title>
+  <title>시너지 턴 카드 배틀 v1.5.1</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="app">
     <header class="top-bar">
       <div>
-        <h1>시너지 턴 카드 배틀 v1.5</h1>
-        <p class="subtitle">캔버스 HUD + 랜덤 덱 정비 오버레이를 적용한 서버리스 러닝 모드</p>
+        <h1>시너지 턴 카드 배틀 v1.5.1</h1>
+        <p class="subtitle">캔버스 HUD + 전장 초상화 + 랜덤 덱 정비 오버레이를 적용한 서버리스 러닝 모드</p>
       </div>
       <div class="controls">
         <button id="start-btn">새 런 시작</button>
@@ -29,11 +29,13 @@
           <canvas id="battle-canvas" width="960" height="330" aria-label="배틀 전장"></canvas>
           <div class="arena-overlay">
             <div class="fighter enemy" id="enemy-sprite">
+              <img id="enemy-portrait" class="fighter-portrait" alt="적 초상" />
               <div class="fighter-name">적</div>
               <div class="hp-track"><div id="enemy-hp-fill" class="hp-fill"></div></div>
             </div>
             <div class="vs-mark">VS</div>
             <div class="fighter player" id="player-sprite">
+              <img id="player-portrait" class="fighter-portrait" alt="플레이어 초상" />
               <div class="fighter-name">플레이어</div>
               <div class="hp-track"><div id="player-hp-fill" class="hp-fill"></div></div>
             </div>

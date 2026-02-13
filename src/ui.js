@@ -54,6 +54,24 @@ const sigilIcon = (sigil) => {
   return icons[sigil] || '✨';
 };
 
+
+const PLAYER_PORTRAIT = (() => {
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 220'>
+    <defs>
+      <linearGradient id='playerBg' x1='0' y1='0' x2='1' y2='1'>
+        <stop offset='0' stop-color='#60a5fa'/>
+        <stop offset='1' stop-color='#1d4ed8'/>
+      </linearGradient>
+    </defs>
+    <rect width='220' height='220' rx='28' fill='url(#playerBg)'/>
+    <circle cx='110' cy='90' r='54' fill='rgba(15,23,42,0.45)' stroke='rgba(255,255,255,0.55)' stroke-width='3'/>
+    <text x='110' y='108' text-anchor='middle' font-size='56'>🧙</text>
+    <rect x='18' y='154' width='184' height='48' rx='12' fill='rgba(15,23,42,0.62)'/>
+    <text x='110' y='184' text-anchor='middle' fill='white' font-size='18' font-weight='700' font-family='sans-serif'>플레이어</text>
+  </svg>`;
+  return `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`;
+})();
+
 const cardTemplate = (card) => `<div class='card-top'>
   <span class='sigil-chip sigil-${card.sigil.toLowerCase()}'>${sigilIcon(card.sigil)} ${SIGIL_LABELS[card.sigil] || card.sigil}</span>
   <span class='cost-chip'>코스트 ${card.energyCost}</span>
@@ -244,6 +262,8 @@ export function createUiBindings() {
     playerHpFill: document.querySelector('#player-hp-fill'),
     enemySprite: document.querySelector('#enemy-sprite'),
     playerSprite: document.querySelector('#player-sprite'),
+    enemyPortrait: document.querySelector('#enemy-portrait'),
+    playerPortrait: document.querySelector('#player-portrait'),
     regionName: document.querySelector('#region-name'),
     roundInfo: document.querySelector('#round-info'),
     battleState: document.querySelector('#battle-state'),
@@ -303,6 +323,12 @@ export function render(ui, game, actions) {
     : game.state === STATES.ENEMY_TURN
       ? '적 행동 처리 중입니다. 잠시 기다려 주세요.'
       : '상태에 맞는 진행 버튼을 선택해 전투를 이어가세요.';
+
+  const enemyPortrait = game.enemy?.archetypeId ? ENEMY_ARCHETYPES[game.enemy.archetypeId]?.image : null;
+  ui.enemyPortrait.src = enemyPortrait || PLAYER_PORTRAIT;
+  ui.enemyPortrait.alt = game.enemy ? `${game.enemy.name} 초상` : '적 초상';
+  ui.playerPortrait.src = PLAYER_PORTRAIT;
+  ui.playerPortrait.alt = '플레이어 초상';
 
   const playerHpRate = game.player.maxHp ? (game.player.hp / game.player.maxHp) * 100 : 0;
   const enemyHpRate = game.enemy?.maxHp ? ((game.enemy.hp || 0) / game.enemy.maxHp) * 100 : 0;
