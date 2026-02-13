@@ -27,7 +27,7 @@ function createActor({ name, hp, deckIds }) {
 
 export function createGame() {
   return {
-    state: STATES.READY, round: 0, totalRounds: 10, activeSide: 'player',
+    state: STATES.READY, round: 0, totalRounds: 50, activeSide: 'player',
     region: '-', score: 0, deck: [...STARTER_DECK], rewardChoices: [],
     removeChoices: [], rewardAccepted: false, removedInDeckBuild: false, discoverChoices: [],
     routeChoices: [], currentRoute: null,
@@ -94,7 +94,7 @@ export function createEngine(game, hooks) {
   const scoreAction = (card) => { game.score += card.type === 'attack' ? 9 : 7; };
 
   const getRouteCandidates = () => {
-    const routeRegionIds = ROUTE_TABLE[Math.min(game.round, ROUTE_TABLE.length - 1)] || [];
+    const routeRegionIds = ROUTE_TABLE[game.round % ROUTE_TABLE.length] || [];
     return routeRegionIds.map((regionId, idx) => {
       const region = REGIONS.find((r) => r.id === regionId) || REGIONS[0];
       const enemyId = region.enemies[(game.round + idx) % region.enemies.length];
@@ -146,11 +146,11 @@ export function createEngine(game, hooks) {
   };
 
   const getEnemyScaling = () => {
-    const stage = Math.min(3, Math.floor(game.round / 3));
+    const stage = Math.min(7, Math.floor(game.round / 7));
     return {
       threatLevel: 1 + stage,
-      extraEnergyPerTurn: stage >= 3 ? 2 : stage,
-      extraDrawPerTurn: game.round >= 6 ? 1 : 0,
+      extraEnergyPerTurn: stage >= 6 ? 3 : stage >= 3 ? 2 : stage >= 1 ? 1 : 0,
+      extraDrawPerTurn: stage >= 3 ? 1 : 0,
     };
   };
 

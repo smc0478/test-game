@@ -1,7 +1,7 @@
-# Synergy Turn Card Battle v1.7 문서
+# Synergy Turn Card Battle v1.8 문서
 
 ## 게임 소개
-v1.7은 **Phaser 3 배틀 스테이지**와 **DOM 하이브리드 UI**를 결합한 전환 버전입니다.
+v1.8은 **50라운드 장기 런**, **확장 카드 풀(C001~C160)**, **다종 적 편성(26종)**을 적용한 확장 버전입니다.
 
 ## 변경 파일 목록 (Phaser 이관)
 - `index.html`: Phaser CDN 로드, `#game-root` 배틀 컨테이너 추가, 기존 캔버스 오버레이 제거.
