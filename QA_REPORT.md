@@ -26,3 +26,5 @@
 | BUG-VAMP-OVERKILL | `tests/bugs/vamp-lifesteal-overkill.test.mjs` | `node tests/bugs/vamp-lifesteal-overkill.test.mjs` | PASS | 흡혈 회복량이 실제 피해(오버킬 제외) 기준인지 검증 |
 | BUG-VAMP-BLOCKED-DAMAGE | `tests/bugs/vamp-lifesteal-blocked-damage.test.mjs` | `node tests/bugs/vamp-lifesteal-blocked-damage.test.mjs` | PASS | 수정 전 FAIL(회복 32), 수정 후 PASS(실피해 0일 때 회복 0) 확인 |
 | BUG-STALE-CLICK-ENERGY | `tests/bugs/stale-index-double-play-energy.test.mjs` | `node tests/bugs/stale-index-double-play-energy.test.mjs` | PASS | 수정 전 FAIL(에너지 1), 수정 후 PASS(에너지 2)로 중복 클릭 회귀 확인 |
+| BUG-PLAYER-ENERGY-CAP | `tests/bugs/player-energy-cap.test.mjs` | `node tests/bugs/player-energy-cap.test.mjs` | PASS | 다음 턴 에너지 보너스가 있어도 플레이어 에너지가 3을 초과하지 않는지 검증 |
+

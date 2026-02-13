@@ -105,6 +105,10 @@ export function createEngine(game, hooks) {
 
   const scoreAction = (card) => { game.score += card.type === 'attack' ? 9 : 7; };
 
+  const clampPlayerEnergy = (actor) => {
+    if (actor === game.player) actor.energy = Math.min(actor.energy, MAX_ENERGY);
+  };
+
   const getRouteCandidates = () => {
     const routeRegionIds = ROUTE_TABLE[game.round % ROUTE_TABLE.length] || [];
     return routeRegionIds.map((regionId, idx) => {
@@ -144,6 +148,7 @@ export function createEngine(game, hooks) {
       log(`${actor.name} 다음 턴 에너지 보너스 +${actor.nextTurnEnergyBonus}`);
       actor.nextTurnEnergyBonus = 0;
     }
+    clampPlayerEnergy(actor);
     actor.turnFamilyCounts = {};
     actor.turnFamiliesUsed = new Set();
     actor.comboChain = 0;
@@ -338,6 +343,7 @@ export function createEngine(game, hooks) {
       }
       game.score += 15;
     }
+    clampPlayerEnergy(actor);
   };
 
   const applyEffect = (source, target, effect, card, context = { fromRewind: false }) => {
@@ -413,7 +419,10 @@ export function createEngine(game, hooks) {
     if (effect.kind === 'block') source.block += effect.value + (source.activeSynergies.Leaf ? 7 : 0);
     if (effect.kind === 'draw') draw(source, effect.value + (source.activeSynergies.Gear ? 1 : 0));
     if (effect.kind === 'heal') restoreHp(source, effect.value);
-    if (effect.kind === 'gainEnergy') source.energy += effect.value;
+    if (effect.kind === 'gainEnergy') {
+      source.energy += effect.value;
+      clampPlayerEnergy(source);
+    }
     if (effect.kind === 'buffAttack') source.attackBuff += effect.value;
     if (effect.kind === 'reduceBlock') target.block = Math.max(0, target.block - effect.value);
     if (effect.kind === 'vulnerable') target.vulnerable += effect.value;
@@ -533,6 +542,7 @@ export function createEngine(game, hooks) {
       if (roll === 'tempo') {
         draw(source, 2);
         source.energy += 2;
+        clampPlayerEnergy(source);
         log(`${source.name} 도박 성공: 드로우 2 + 에너지 2`);
       }
       if (roll === 'void') {
