@@ -32,7 +32,7 @@ export function createGame() {
     routeChoices: [], currentRoute: null,
     playedCardsHistory: [],
     logs: ['대기 중: 런 시작 버튼을 누르세요.'],
-    player: createActor({ name: '플레이어', hp: 84, deckIds: STARTER_DECK }),
+    player: createActor({ name: '플레이어', hp: 78, deckIds: STARTER_DECK }),
     enemy: null
   };
 }
@@ -89,7 +89,7 @@ export function createEngine(game, hooks) {
     }
   };
 
-  const scoreAction = (card) => { game.score += card.type === 'attack' ? 10 : 8; };
+  const scoreAction = (card) => { game.score += card.type === 'attack' ? 9 : 7; };
 
   const getRouteCandidates = () => {
     const routeRegionIds = ROUTE_TABLE[Math.min(game.round, ROUTE_TABLE.length - 1)] || [];
@@ -137,8 +137,8 @@ export function createEngine(game, hooks) {
     const stage = Math.min(3, Math.floor(game.round / 3));
     return {
       threatLevel: 1 + stage,
-      extraEnergyPerTurn: stage,
-      extraDrawPerTurn: game.round >= 5 ? 1 : 0,
+      extraEnergyPerTurn: stage >= 3 ? 2 : stage,
+      extraDrawPerTurn: game.round >= 6 ? 1 : 0,
     };
   };
 
@@ -192,44 +192,43 @@ export function createEngine(game, hooks) {
     const activeCount = SIGILS.filter((s) => actor.activeSynergies[s]).length;
     if (activeCount >= 2 && !actor.adrenalineTriggered) {
       actor.energy += 1;
-      draw(actor, 1);
-      game.score += 12;
+      game.score += 8;
       actor.adrenalineTriggered = true;
       log(`${actor.name} 아드레날린 발동`);
     }
     if (new Set(SIGILS.filter((s) => actor.sigilCounts[s] > 0)).size === 4) {
       actor.turnScoreMultiplier = true;
-      game.score += 40;
+      game.score += 24;
     }
-    if (actor.comboChain >= 4 && !actor.prismBurstTriggered) {
+    if (actor.comboChain >= 3 && !actor.prismBurstTriggered) {
       actor.prismBurstTriggered = true;
-      actor.block += 8;
-      applyDamage(actor === game.player ? game.enemy : game.player, 12);
-      game.score += 20;
+      actor.block += 6;
+      applyDamage(actor === game.player ? game.enemy : game.player, 8);
+      game.score += 12;
       log(`${actor.name} 프리즘 버스트 발동`);
     }
 
-    if (actor.sigilCounts[card.sigil] >= 3 && !actor.sigilBurstTriggered[card.sigil]) {
+    if (actor.sigilCounts[card.sigil] >= 4 && !actor.sigilBurstTriggered[card.sigil]) {
       actor.sigilBurstTriggered[card.sigil] = true;
       if (card.sigil === 'Flame') {
-        applyDamage(actor === game.player ? game.enemy : game.player, 16);
-        log(`${actor.name} 화염 폭주: 추가 피해 16`);
+        applyDamage(actor === game.player ? game.enemy : game.player, 12);
+        log(`${actor.name} 화염 폭주: 추가 피해 12`);
       }
       if (card.sigil === 'Leaf') {
-        actor.block += 16;
-        actor.hp = clamp(actor.hp + 8, 0, actor.maxHp);
-        log(`${actor.name} 리프 개화: 방어 16 + 회복 8`);
+        actor.block += 14;
+        actor.hp = clamp(actor.hp + 6, 0, actor.maxHp);
+        log(`${actor.name} 리프 개화: 방어 14 + 회복 6`);
       }
       if (card.sigil === 'Gear') {
-        actor.energy += 2;
-        draw(actor, 3);
-        log(`${actor.name} 기어 과충전: 에너지 2 + 드로우 3`);
+        actor.energy += 1;
+        draw(actor, 2);
+        log(`${actor.name} 기어 과충전: 에너지 1 + 드로우 2`);
       }
       if (card.sigil === 'Void') {
-        applyDamage(actor === game.player ? game.enemy : game.player, 12);
+        applyDamage(actor === game.player ? game.enemy : game.player, 10);
         const rival = actor === game.player ? game.enemy : game.player;
-        rival.vulnerable += 2;
-        log(`${actor.name} 공허 붕괴: 피해 12 + 취약 2`);
+        rival.vulnerable += 1;
+        log(`${actor.name} 공허 붕괴: 피해 10 + 취약 1`);
       }
       game.score += 15;
     }
@@ -251,8 +250,8 @@ export function createEngine(game, hooks) {
 
     if (effect.kind === 'attack') {
       const buffBonus = source.attackBuff;
-      const flameBonus = source.activeSynergies.Flame ? 6 : 0;
-      const voidBonus = source.activeSynergies.Void ? 4 : 0;
+      const flameBonus = source.activeSynergies.Flame ? 5 : 0;
+      const voidBonus = source.activeSynergies.Void ? 3 : 0;
       const vulnerableBonus = target.vulnerable > 0 ? 2 : 0;
       const damage = effect.value + buffBonus + flameBonus + voidBonus + vulnerableBonus;
       const dealt = applyDamage(target, damage);
@@ -264,10 +263,10 @@ export function createEngine(game, hooks) {
         vulnerableBonus ? `취약 +${vulnerableBonus}` : null
       ].filter(Boolean).join(', ');
       log(`${source.name} 공격 ${dealt} (계산: ${formula})`);
-      if (source.activeSynergies.Void) source.hp = clamp(source.hp + 2, 0, source.maxHp);
+      if (source.activeSynergies.Void) source.hp = clamp(source.hp + 1, 0, source.maxHp);
       source.attackBuff = 0;
     }
-    if (effect.kind === 'block') source.block += effect.value + (source.activeSynergies.Leaf ? 6 : 0);
+    if (effect.kind === 'block') source.block += effect.value + (source.activeSynergies.Leaf ? 7 : 0);
     if (effect.kind === 'draw') draw(source, effect.value + (source.activeSynergies.Gear ? 1 : 0));
     if (effect.kind === 'heal') source.hp = clamp(source.hp + effect.value, 0, source.maxHp);
     if (effect.kind === 'gainEnergy') source.energy += effect.value;
@@ -385,7 +384,7 @@ export function createEngine(game, hooks) {
     game.round = 0;
     game.score = 0;
     game.deck = [...STARTER_DECK];
-    game.player = createActor({ name: '플레이어', hp: 84, deckIds: game.deck });
+    game.player = createActor({ name: '플레이어', hp: 78, deckIds: game.deck });
     game.enemy = null;
     game.rewardChoices = [];
     game.removeChoices = [];
@@ -413,8 +412,8 @@ export function createEngine(game, hooks) {
         renderAndPersist();
         return;
       }
-      game.score += 100;
-      if (game.player.hp >= 40) game.score += 30;
+      game.score += 110;
+      if (game.player.hp >= 36) game.score += 25;
       game.round += 1;
       game.player.lastTurnFamilies = new Set(game.player.turnFamiliesUsed);
       if (game.round >= game.totalRounds) {

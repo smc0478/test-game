@@ -264,6 +264,28 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   margin-top: 8px;
 }
 
+
+.tactical-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.stat-panel {
+  min-height: 172px;
+  box-shadow: inset 0 0 0 1px rgba(125, 163, 255, 0.18);
+}
+.hand-panel {
+  border-color: #5a79c4;
+  background: linear-gradient(180deg, #10204a, #0a1432 62%);
+}
+.controls-bottom #end-turn-btn {
+  min-width: 124px;
+  font-weight: 800;
+  border-radius: 999px;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.24);
+}
+.panel h2 {
+  letter-spacing: 0.01em;
+}
+
 @media (max-width: 860px) {
   .top-bar,
   .battle-controls {
