@@ -43,12 +43,12 @@ const REGIONS = [
 ];
 
 const ENEMY_ARCHETYPES = {
-  emberFox: { id: "emberFox", name: "잿불 여우", hp: 58, deck: ["C001", "C002", "C014", "C019", "C017"] },
-  ironShell: { id: "ironShell", name: "철갑 딱정벌레", hp: 70, deck: ["C006", "C007", "C015", "C016", "C020"] },
-  gearSentinel: { id: "gearSentinel", name: "기어 센티넬", hp: 74, deck: ["C004", "C008", "C015", "C017", "C018"] },
-  thornDruid: { id: "thornDruid", name: "가시 드루이드", hp: 76, deck: ["C003", "C006", "C011", "C013", "C016"] },
-  voidReaper: { id: "voidReaper", name: "공허 수확자", hp: 84, deck: ["C005", "C010", "C012", "C018", "C020"] },
-  prismOverlord: { id: "prismOverlord", name: "프리즘 군주", hp: 96, deck: ["C001", "C011", "C012", "C018", "C020"] }
+  emberFox: { id: "emberFox", name: "잿불 여우", hp: 60, deck: ["C001", "C002", "C014", "C021", "C017"] },
+  ironShell: { id: "ironShell", name: "철갑 딱정벌레", hp: 72, deck: ["C006", "C007", "C015", "C016", "C022"] },
+  gearSentinel: { id: "gearSentinel", name: "기어 센티넬", hp: 76, deck: ["C004", "C008", "C015", "C017", "C022"] },
+  thornDruid: { id: "thornDruid", name: "가시 드루이드", hp: 80, deck: ["C003", "C006", "C011", "C013", "C024"] },
+  voidReaper: { id: "voidReaper", name: "공허 수확자", hp: 88, deck: ["C005", "C010", "C012", "C018", "C023"] },
+  prismOverlord: { id: "prismOverlord", name: "프리즘 군주", hp: 102, deck: ["C001", "C011", "C012", "C021", "C023"] }
 };
 
 function makeCardArt(name, sigil) {
@@ -58,26 +58,30 @@ function makeCardArt(name, sigil) {
 }
 
 const CARD_LIBRARY = {
-  C001: { id: "C001", name: "엠버 스트라이크", type: "attack", energyCost: 1, baseValue: 7, sigil: "Flame", effect: [{ kind: "attack", value: 7 }] },
-  C002: { id: "C002", name: "블레이즈 러시", type: "attack", energyCost: 1, baseValue: 8, sigil: "Flame", effect: [{ kind: "attack", value: 8 }] },
-  C003: { id: "C003", name: "쏜 잽", type: "attack", energyCost: 1, baseValue: 6, sigil: "Leaf", effect: [{ kind: "attack", value: 6 }] },
-  C004: { id: "C004", name: "코그 샷", type: "attack", energyCost: 1, baseValue: 6, sigil: "Gear", effect: [{ kind: "attack", value: 6 }] },
-  C005: { id: "C005", name: "널 피어스", type: "attack", energyCost: 1, baseValue: 6, sigil: "Void", effect: [{ kind: "attack", value: 6 }, { kind: "drain", value: 2 }] },
-  C006: { id: "C006", name: "바크 가드", type: "skill", energyCost: 1, baseValue: 8, sigil: "Leaf", effect: [{ kind: "block", value: 8 }] },
-  C007: { id: "C007", name: "클락워크 가드", type: "skill", energyCost: 1, baseValue: 7, sigil: "Gear", effect: [{ kind: "block", value: 7 }, { kind: "draw", value: 1 }] },
-  C008: { id: "C008", name: "스파크 사이클", type: "skill", energyCost: 1, baseValue: 0, sigil: "Gear", effect: [{ kind: "draw", value: 2 }] },
-  C009: { id: "C009", name: "애쉬 포커스", type: "skill", energyCost: 1, baseValue: 0, sigil: "Flame", effect: [{ kind: "buffAttack", value: 4 }] },
-  C010: { id: "C010", name: "보이드 에코", type: "skill", energyCost: 1, baseValue: 0, sigil: "Void", effect: [{ kind: "reduceBlock", value: 4 }] },
-  C011: { id: "C011", name: "버던트 펄스", type: "skill", energyCost: 2, baseValue: 12, sigil: "Leaf", effect: [{ kind: "block", value: 12 }, { kind: "heal", value: 3 }] },
-  C012: { id: "C012", name: "어비스 컷", type: "attack", energyCost: 2, baseValue: 12, sigil: "Void", effect: [{ kind: "attack", value: 12 }] },
-  C013: { id: "C013", name: "숲의 의식", type: "skill", energyCost: 1, baseValue: 0, sigil: "Leaf", effect: [{ kind: "heal", value: 5 }] },
-  C014: { id: "C014", name: "화염 연계", type: "attack", energyCost: 1, baseValue: 5, sigil: "Flame", effect: [{ kind: "attack", value: 5 }, { kind: "draw", value: 1 }] },
-  C015: { id: "C015", name: "기어 오버클럭", type: "skill", energyCost: 1, baseValue: 0, sigil: "Gear", effect: [{ kind: "gainEnergy", value: 1 }, { kind: "draw", value: 1 }] },
-  C016: { id: "C016", name: "가시 방패", type: "skill", energyCost: 1, baseValue: 6, sigil: "Leaf", effect: [{ kind: "block", value: 6 }, { kind: "thorns", value: 3 }] },
-  C017: { id: "C017", name: "용광로 해머", type: "attack", energyCost: 2, baseValue: 14, sigil: "Flame", effect: [{ kind: "attack", value: 14 }] },
-  C018: { id: "C018", name: "공허 균열", type: "skill", energyCost: 1, baseValue: 0, sigil: "Void", effect: [{ kind: "vulnerable", value: 1 }] },
-  C019: { id: "C019", name: "재점화", type: "skill", energyCost: 0, baseValue: 0, sigil: "Flame", effect: [{ kind: "buffAttack", value: 2 }, { kind: "draw", value: 1 }] },
-  C020: { id: "C020", name: "프리즘 웨이브", type: "attack", energyCost: 2, baseValue: 10, sigil: "Void", effect: [{ kind: "attack", value: 10 }, { kind: "block", value: 8 }] }
+  C001: { id: "C001", name: "엠버 스트라이크", family: "emberStrike", type: "attack", energyCost: 1, baseValue: 7, sigil: "Flame", effect: [{ kind: "attack", value: 7 }] },
+  C002: { id: "C002", name: "블레이즈 러시", family: "emberStrike", type: "attack", energyCost: 1, baseValue: 8, sigil: "Flame", effect: [{ kind: "attack", value: 8 }] },
+  C003: { id: "C003", name: "쏜 잽", family: "thorn", type: "attack", energyCost: 1, baseValue: 6, sigil: "Leaf", effect: [{ kind: "attack", value: 6 }] },
+  C004: { id: "C004", name: "코그 샷", family: "cog", type: "attack", energyCost: 1, baseValue: 6, sigil: "Gear", effect: [{ kind: "attack", value: 6 }] },
+  C005: { id: "C005", name: "널 피어스", family: "voidMark", type: "attack", energyCost: 1, baseValue: 6, sigil: "Void", effect: [{ kind: "attack", value: 6 }, { kind: "drain", value: 2 }] },
+  C006: { id: "C006", name: "바크 가드", family: "bark", type: "skill", energyCost: 1, baseValue: 8, sigil: "Leaf", effect: [{ kind: "block", value: 8 }] },
+  C007: { id: "C007", name: "클락워크 가드", family: "clockwork", type: "skill", energyCost: 1, baseValue: 7, sigil: "Gear", effect: [{ kind: "block", value: 7 }, { kind: "draw", value: 1 }] },
+  C008: { id: "C008", name: "스파크 사이클", family: "clockwork", type: "skill", energyCost: 1, baseValue: 0, sigil: "Gear", effect: [{ kind: "draw", value: 2 }] },
+  C009: { id: "C009", name: "애쉬 포커스", family: "emberRitual", type: "skill", energyCost: 1, baseValue: 0, sigil: "Flame", effect: [{ kind: "buffAttack", value: 4 }] },
+  C010: { id: "C010", name: "보이드 에코", family: "voidMark", type: "skill", energyCost: 1, baseValue: 0, sigil: "Void", effect: [{ kind: "reduceBlock", value: 4 }] },
+  C011: { id: "C011", name: "버던트 펄스", family: "bark", type: "skill", energyCost: 2, baseValue: 12, sigil: "Leaf", effect: [{ kind: "block", value: 12 }, { kind: "heal", value: 3 }] },
+  C012: { id: "C012", name: "어비스 컷", family: "voidBlade", type: "attack", energyCost: 2, baseValue: 12, sigil: "Void", effect: [{ kind: "attack", value: 12 }] },
+  C013: { id: "C013", name: "숲의 의식", family: "thorn", type: "skill", energyCost: 1, baseValue: 0, sigil: "Leaf", effect: [{ kind: "heal", value: 5 }] },
+  C014: { id: "C014", name: "화염 연계", family: "emberStrike", type: "attack", energyCost: 1, baseValue: 5, sigil: "Flame", effect: [{ kind: "attack", value: 5 }, { kind: "draw", value: 1 }] },
+  C015: { id: "C015", name: "기어 오버클럭", family: "clockwork", type: "skill", energyCost: 1, baseValue: 0, sigil: "Gear", effect: [{ kind: "gainEnergy", value: 1 }, { kind: "draw", value: 1 }] },
+  C016: { id: "C016", name: "가시 방패", family: "thorn", type: "skill", energyCost: 1, baseValue: 6, sigil: "Leaf", effect: [{ kind: "block", value: 6 }, { kind: "thorns", value: 3 }] },
+  C017: { id: "C017", name: "용광로 분출", family: "emberRitual", type: "attack", energyCost: 2, baseValue: 11, sigil: "Flame", effect: [{ kind: "attack", value: 11 }, { kind: "vulnerable", value: 1 }] },
+  C018: { id: "C018", name: "프리즘 스텝", family: "voidBlade", type: "skill", energyCost: 1, baseValue: 0, sigil: "Void", effect: [{ kind: "draw", value: 1 }, { kind: "gainEnergy", value: 1 }] },
+  C019: { id: "C019", name: "아크 플레어", family: "cog", type: "attack", energyCost: 1, baseValue: 9, sigil: "Gear", effect: [{ kind: "attack", value: 9 }] },
+  C020: { id: "C020", name: "공허 격자", family: "voidMark", type: "attack", energyCost: 2, baseValue: 10, sigil: "Void", effect: [{ kind: "attack", value: 10 }, { kind: "block", value: 8 }] },
+  C021: { id: "C021", name: "혈화 강타", family: "bloodflame", type: "attack", energyCost: 2, baseValue: 14, sigil: "Flame", effect: [{ kind: "selfDamage", value: 3 }, { kind: "attack", value: 14 }] },
+  C022: { id: "C022", name: "연쇄 톱니", family: "chainGear", type: "attack", energyCost: 1, baseValue: 5, sigil: "Gear", effect: [{ kind: "attack", value: 5 }, { kind: "echoAttack", value: 6 }] },
+  C023: { id: "C023", name: "회귀 낙인", family: "voidMark", type: "skill", energyCost: 1, baseValue: 0, sigil: "Void", effect: [{ kind: "vulnerable", value: 1 }, { kind: "ifLastTurnFamily", family: "voidMark", then: [{ kind: "draw", value: 2 }, { kind: "gainEnergy", value: 1 }] }] },
+  C024: { id: "C024", name: "재생 방진", family: "bark", type: "skill", energyCost: 1, baseValue: 6, sigil: "Leaf", effect: [{ kind: "block", value: 6 }, { kind: "ifLastTurnFamily", family: "bark", then: [{ kind: "heal", value: 4 }] }] }
 };
 
 Object.values(CARD_LIBRARY).forEach((card) => {
@@ -125,7 +129,10 @@ function createFighter(name, maxHp, deckIds) {
     lastSigil: null,
     prismBurstTriggered: false,
     adrenalineTriggered: false,
-    momentumTriggered: false
+    momentumTriggered: false,
+    turnFamilyCounts: {},
+    turnFamiliesUsed: new Set(),
+    lastTurnFamilies: new Set()
   };
 }
 
@@ -175,6 +182,9 @@ function resetTurnState(actor) {
   actor.adrenalineTriggered = false;
   actor.momentumTriggered = false;
   actor.thorns = 0;
+  actor.turnFamilyCounts = {};
+  actor.turnFamiliesUsed = new Set();
+  actor.vulnerable = Math.max(0, actor.vulnerable - 1);
 }
 
 function setupRound() {
@@ -187,6 +197,7 @@ function setupRound() {
   const carryHp = game.prevPlayerHp ?? 72;
   game.player = createFighter("플레이어", 72, game.deck);
   game.player.hp = Math.min(game.player.maxHp, carryHp);
+  game.player.lastTurnFamilies = game.prevPlayerFamilies ? new Set(game.prevPlayerFamilies) : new Set();
 
   game.enemy = createFighter(enemySpec.name, enemySpec.hp, enemySpec.deck);
   game.enemy.id = enemySpec.id;
@@ -201,6 +212,7 @@ function startRun() {
   game.round = 0;
   game.deck = [...STARTER_DECK];
   game.prevPlayerHp = 72;
+  game.prevPlayerFamilies = [];
   ui.log.innerHTML = "";
   setupRound();
   render();
@@ -225,14 +237,18 @@ function transitionTo(next) {
   render();
 }
 
-function applyCardEffect(actor, target, effect) {
+function targetOf(actor) {
+  return actor === game.player ? game.enemy : game.player;
+}
+
+function applyCardEffect(actor, target, effect, card) {
   if (effect.kind === "attack") {
     let damage = effect.value + actor.nextAttackBonus;
     if (target.vulnerable > 0) damage = Math.floor(damage * 1.5);
     const absorbed = Math.min(target.block, damage);
     target.block -= absorbed;
     target.hp -= Math.max(0, damage - absorbed);
-    if (actor.activeSynergies.Flame && actor.lastPlayedSigil === "Flame") {
+    if (actor.activeSynergies.Flame && card.sigil === "Flame") {
       target.hp -= 3;
       log("Flame 시너지: 추가 피해 +3");
     }
@@ -251,11 +267,28 @@ function applyCardEffect(actor, target, effect) {
   if (effect.kind === "thorns") actor.thorns += effect.value;
   if (effect.kind === "vulnerable") target.vulnerable += effect.value;
   if (effect.kind === "drain") actor.hp = Math.min(actor.maxHp, actor.hp + effect.value);
+  if (effect.kind === "selfDamage") {
+    actor.hp = Math.max(0, actor.hp - effect.value);
+    log(`${actor.name}: 반동 피해 ${effect.value}`, "bad");
+  }
+
+  if (effect.kind === "echoAttack") {
+    if ((actor.turnFamilyCounts[card.family] || 0) >= 2) {
+      applyCardEffect(actor, target, { kind: "attack", value: effect.value }, card);
+      log(`${card.name}: 동명 카드 공명 발동 (+${effect.value} 공격)`, "good");
+    }
+  }
+
+  if (effect.kind === "ifLastTurnFamily") {
+    if (actor.lastTurnFamilies.has(effect.family)) {
+      effect.then.forEach((nested) => applyCardEffect(actor, target, nested, card));
+      log(`${card.name}: 전 턴 기억 발동 (${effect.family})`, "good");
+    }
+  }
 }
 
 function updateSynergy(actor, card, isPlayer) {
   actor.sigilCounts[card.sigil] += 1;
-  actor.lastPlayedSigil = card.sigil;
 
   if (actor.lastSigil && actor.lastSigil !== card.sigil) actor.comboChain = Math.min(4, actor.comboChain + 1);
   else actor.comboChain = 1;
@@ -291,19 +324,17 @@ function updateSynergy(actor, card, isPlayer) {
   }
 }
 
-function targetOf(actor) {
-  return actor === game.player ? game.enemy : game.player;
-}
-
 function resolveCard(actor, target, cardIndex) {
   const card = actor.hand[cardIndex];
   if (!card || card.energyCost > actor.energy) return false;
 
   actor.energy -= card.energyCost;
   actor.turnPlayed += 1;
-  updateSynergy(actor, card, actor === game.player);
+  actor.turnFamilyCounts[card.family] = (actor.turnFamilyCounts[card.family] || 0) + 1;
+  actor.turnFamiliesUsed.add(card.family);
 
-  card.effect.forEach((effect) => applyCardEffect(actor, target, effect));
+  updateSynergy(actor, card, actor === game.player);
+  card.effect.forEach((effect) => applyCardEffect(actor, target, effect, card));
 
   if (actor.turnPlayed >= 3 && !actor.momentumTriggered) {
     actor.momentumTriggered = true;
@@ -340,6 +371,7 @@ function resolveCard(actor, target, cardIndex) {
 
 function endPlayerTurn() {
   if (game.state !== STATE_PLAYER_TURN) return;
+  game.player.lastTurnFamilies = new Set(game.player.turnFamiliesUsed);
   game.player.discardPile.push(...game.player.hand);
   game.player.hand = [];
   transitionTo(STATE_ENEMY_TURN);
@@ -363,6 +395,7 @@ function enemyLoop() {
     if (game.state !== STATE_ENEMY_TURN) return;
     if (game.enemy.energy <= 0 || game.enemy.hand.every((c) => c.energyCost > game.enemy.energy)) break;
   }
+  game.enemy.lastTurnFamilies = new Set(game.enemy.turnFamiliesUsed);
   game.enemy.discardPile.push(...game.enemy.hand);
   game.enemy.hand = [];
   transitionTo(STATE_RESOLUTION);
@@ -413,9 +446,29 @@ function resolveBattleState() {
     game.score += 100;
     if (game.player.hp >= 40) game.score += 30;
     game.prevPlayerHp = game.player.hp;
+    game.prevPlayerFamilies = [...game.player.lastTurnFamilies];
     game.round += 1;
     transitionTo(STATE_DECK_BUILD);
   }
+}
+
+function describeEffect(effect) {
+  const dict = {
+    attack: `공격 ${effect.value}`,
+    block: `방어 ${effect.value}`,
+    draw: `드로우 ${effect.value}`,
+    buffAttack: `다음 공격 +${effect.value}`,
+    reduceBlock: `적 방어 -${effect.value}`,
+    heal: `회복 ${effect.value}`,
+    gainEnergy: `에너지 +${effect.value}`,
+    thorns: `가시 ${effect.value}`,
+    vulnerable: `취약 ${effect.value}`,
+    drain: `흡혈 ${effect.value}`,
+    selfDamage: `자가 피해 ${effect.value}`,
+    echoAttack: `동명 공명 시 추가 공격 ${effect.value}`
+  };
+  if (effect.kind === "ifLastTurnFamily") return `전 턴 ${effect.family} 사용 시: ${effect.then.map(describeEffect).join(" + ")}`;
+  return dict[effect.kind] || `${effect.kind}:${effect.value ?? ""}`;
 }
 
 function renderRewards() {
@@ -437,8 +490,8 @@ function cardNode(card, title = "사용") {
     <img class="card-art" src="${card.image}" alt="${card.name}" />
     <h3>${card.name}</h3>
     <p>${card.id} | ${card.sigil} | ${card.type}</p>
-    <p>코스트 ${card.energyCost} / 수치 ${card.baseValue}</p>
-    <p>효과: ${card.effect.map((e) => `${e.kind}:${e.value}`).join(", ")}</p>
+    <p>패밀리: ${card.family} | 코스트 ${card.energyCost} / 수치 ${card.baseValue}</p>
+    <p>효과: ${card.effect.map(describeEffect).join(", ")}</p>
   `;
   const btn = document.createElement("button");
   btn.className = "play-btn";
@@ -472,7 +525,8 @@ function renderSynergy() {
     `콤보 ${actor.comboChain}`,
     `아드레날린 ${actor.adrenalineTriggered ? "ON" : "OFF"}`,
     `프리즘 버스트 ${actor.prismBurstTriggered ? "사용" : "대기"}`,
-    `풀스펙트럼 ${actor.turnScoreMultiplier ? "ON" : "OFF"}`
+    `풀스펙트럼 ${actor.turnScoreMultiplier ? "ON" : "OFF"}`,
+    `전 턴 패밀리 ${[...actor.lastTurnFamilies].join("/") || "없음"}`
   ].forEach((text) => {
     const tag = document.createElement("div");
     tag.className = "synergy-badge";
