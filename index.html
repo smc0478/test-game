@@ -12,11 +12,9 @@
     <header class="top-bar">
       <div>
         <h1>시너지 턴 카드 배틀 v1.7.0</h1>
-        <p class="subtitle">Phaser 3 배틀 스테이지 + DOM 하이브리드 UI 이관 버전</p>
+        <p class="subtitle">핵심 전투 화면 중심 UI</p>
       </div>
-      <div class="controls">
-        <button id="start-btn">새 런 시작</button>
-        <button id="resume-btn">이어하기</button>
+      <div class="controls utility-controls">
         <button id="reset-save-btn">저장 초기화</button>
         <button id="open-codex-btn" type="button">도감 페이지</button>
         <button id="open-hall-btn" type="button">명예의 전당</button>
@@ -25,7 +23,16 @@
 
     <section class="status-grid tactical-grid">
       <article class="panel battle-stage">
-        <h2>배틀 스테이지</h2>
+        <div class="battle-focus-header" aria-label="전투 핵심 정보">
+          <div class="focus-primary">
+            <div class="focus-chip emphasis">플레이어 HP <strong><span id="player-hp-main">0</span> / <span id="player-max-hp-main">0</span></strong></div>
+            <div class="focus-chip danger">적 HP <strong><span id="enemy-hp-main">0</span> / <span id="enemy-max-hp-main">0</span></strong></div>
+            <div class="focus-chip">라운드 <strong><span id="round-info">0 / 0</span></strong></div>
+            <div class="focus-chip">점수 <strong><span id="score">0</span></strong></div>
+          </div>
+          <p class="focus-meta small">지역 <span id="region-name">-</span> · 상태 <span id="battle-state">ready</span> · 턴 <span id="turn-owner">-</span></p>
+        </div>
+
         <div class="battlefield-layout">
           <div class="canvas-wrap">
             <div id="game-root" aria-label="Phaser 배틀 스테이지"></div>
@@ -69,6 +76,7 @@
             </section>
           </div>
         </div>
+
         <section class="battle-hand-dock" aria-label="전투 손패 도크">
           <div class="battle-hand-head">
             <h3>손패</h3>
@@ -76,52 +84,44 @@
           </div>
           <div id="hand" class="hand hand-battle"></div>
         </section>
-        <section class="battle-controls-inline" aria-label="전투 조작">
-          <p id="turn-guide" class="small">카드를 사용하고 우측 턴 종료 버튼으로 템포를 유지하세요.</p>
-          <div class="controls controls-bottom">
-            <button id="end-turn-btn" disabled>턴 종료</button>
-          </div>
-        </section>
-      </article>
 
-      <article class="panel stat-panel">
-        <h2>런 정보 / 흐름</h2>
-        <p>플레이어 HP: <span id="player-hp-main">0</span> / <span id="player-max-hp-main">0</span></p>
-        <p>적 HP: <span id="enemy-hp-main">0</span> / <span id="enemy-max-hp-main">0</span></p>
-        <p>지역: <span id="region-name">-</span></p>
-        <p>라운드: <span id="round-info">0 / 0</span></p>
-        <p>상태: <span id="battle-state">ready</span></p>
-        <p>턴 소유자: <span id="turn-owner">-</span></p>
-        <p>점수: <span id="score">0</span></p>
+        <section class="battle-controls-inline" aria-label="전투 조작">
+          <div class="controls controls-bottom primary-flow">
+            <button id="start-btn">새 런 시작</button>
+            <button id="resume-btn">이어하기</button>
+            <button id="end-turn-btn" class="primary-action" disabled>턴 종료</button>
+          </div>
+          <p id="turn-guide" class="small">카드를 사용하고 턴 종료 버튼으로 템포를 유지하세요.</p>
+        </section>
       </article>
     </section>
 
-    <section class="panel">
+    <section class="panel compact-panel">
       <h2>시너지 / 목표</h2>
       <div id="synergy-info" class="badge-wrap"></div>
       <div id="synergy-effects" class="deck-list"></div>
       <p id="goal-text" class="small">목표: 10라운드를 돌파하고 최종 보스를 처치하세요.</p>
     </section>
 
-    <section id="discover-panel" class="panel hidden">
+    <section id="discover-panel" class="panel hidden compact-panel">
       <h2>아카이브 스캔 결과 (임시 획득)</h2>
       <p class="small">카드 도감에서 1장을 선택해 즉시 손패에 추가합니다.</p>
       <div id="discover-cards" class="hand"></div>
     </section>
 
-    <section id="route-panel" class="panel hidden">
+    <section id="route-panel" class="panel hidden compact-panel">
       <h2>분기 경로 선택</h2>
       <p class="small">다음 전투 지역과 적을 선택하세요. 경로별로 시작 효과가 다릅니다.</p>
       <div id="route-choices" class="deck-list"></div>
     </section>
 
-    <section class="panel">
+    <section class="panel compact-panel">
       <h2>내가 사용한 카드</h2>
       <p class="small">최근에 사용한 카드 12장을 순서대로 보여줍니다.</p>
       <div id="played-cards" class="history-list"></div>
     </section>
 
-    <section class="panel">
+    <section class="panel compact-panel">
       <h2>전투 로그</h2>
       <div id="log" class="log"></div>
     </section>

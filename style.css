@@ -18,7 +18,7 @@ body {
     linear-gradient(160deg, var(--bg), var(--bg2) 46%, #040711);
 }
 
-.app { max-width: 1280px; margin: 0 auto; padding: 22px; }
+.app { max-width: 1240px; margin: 0 auto; padding: 20px; }
 .top-bar {
   display: flex;
   justify-content: space-between;
@@ -26,11 +26,16 @@ body {
   gap: 14px;
   padding: 16px;
   border-radius: 16px;
-  border: 1px solid #40518a;
-  background: linear-gradient(140deg, rgba(21, 38, 86, 0.9), rgba(10, 16, 35, 0.9));
+  border: 1px solid #354771;
+  background: linear-gradient(140deg, rgba(14, 28, 67, 0.88), rgba(8, 14, 32, 0.88));
 }
 .subtitle { margin: 6px 0 0; color: #c3cff3; }
 .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+.utility-controls button {
+  padding: 8px 12px;
+  border-color: #5377bf;
+  background: linear-gradient(180deg, #1f4a8f, #123062);
+}
 
 button {
   border: 1px solid #5cccf8;
@@ -172,16 +177,51 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .guide-item p { margin: 4px 0; font-size: 0.86rem; }
 
 .battle-stage { grid-column: 1 / -1; }
+.battle-stage.panel {
+  padding: 12px;
+}
+.battle-focus-header {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.focus-primary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.focus-chip {
+  background: rgba(14, 25, 56, 0.86);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.86rem;
+  border: 1px solid #4361a6;
+}
+.focus-chip strong {
+  font-size: 0.95rem;
+  color: #f8fbff;
+}
+.focus-chip.emphasis {
+  border-color: #61a4ff;
+  box-shadow: 0 0 0 1px rgba(97, 164, 255, 0.28) inset;
+}
+.focus-chip.danger {
+  border-color: #ff778f;
+  box-shadow: 0 0 0 1px rgba(255, 119, 143, 0.24) inset;
+}
+.focus-meta {
+  margin: 0;
+}
 .battlefield-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 12px;
+  gap: 10px;
 }
 .canvas-wrap {
   position: relative;
   border-radius: 14px;
   overflow: hidden;
-  border: 1px solid #4f6cab;
+  border: 1px solid #3f578a;
 }
 #game-root {
   display: block;
@@ -201,10 +241,8 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .battle-hand-dock {
   margin-top: 10px;
   border-radius: 12px;
-  border: 1px solid #5f7ecc;
-  background: linear-gradient(180deg, rgba(7, 14, 36, 0.96), rgba(9, 18, 46, 0.92));
-  backdrop-filter: blur(3px);
-  padding: 10px;
+  background: rgba(9, 18, 43, 0.82);
+  padding: 8px;
 }
 .battle-hand-head {
   display: flex;
@@ -262,18 +300,31 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .battle-controls-inline {
   margin-top: 10px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 10px;
-  border: 1px solid #35508e;
   border-radius: 12px;
-  padding: 8px 10px;
-  background: rgba(8, 16, 40, 0.82);
+  padding: 8px;
+  background: rgba(8, 16, 40, 0.7);
 }
 .battle-controls-inline .small {
   margin: 0;
 }
 .controls-bottom { margin-left: auto; }
+.primary-flow {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.primary-flow button {
+  width: 100%;
+}
+.primary-action {
+  min-width: 124px;
+  font-weight: 800;
+  border-radius: 999px;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.24);
+}
 
 .canvas-deckbuild-overlay {
   position: absolute;
@@ -299,7 +350,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 
 
 .tactical-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
 }
 .stat-panel {
   min-height: 172px;
@@ -309,14 +360,12 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   border-color: #5a79c4;
   background: linear-gradient(180deg, #10204a, #0a1432 62%);
 }
-.controls-bottom #end-turn-btn {
-  min-width: 124px;
-  font-weight: 800;
-  border-radius: 999px;
-  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.24);
-}
 .panel h2 {
   letter-spacing: 0.01em;
+}
+.compact-panel {
+  padding: 12px;
+  border-color: #2a3b66;
 }
 
 @media (max-width: 860px) {
@@ -332,13 +381,8 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   .canvas-build-grid {
     grid-template-columns: 1fr;
   }
-  .battle-controls-inline .controls-bottom {
-    margin-left: 0;
-    width: 100%;
-  }
-  .battle-controls-inline #end-turn-btn {
-    width: 100%;
-  }
+  .battle-controls-inline .controls-bottom { margin-left: 0; }
+  .primary-flow { grid-template-columns: 1fr; }
   .battle-hand-head {
     flex-direction: column;
     align-items: flex-start;
