@@ -3,6 +3,16 @@ let hoverHooks = { onHover: null, onHoverOut: null };
 const safeRate = (value, max) => (max ? Math.max(0, Math.min(1, value / max)) : 0);
 const BATTLE_STAGE_HEIGHT = 440;
 
+const toClientPointerEvent = (scene, pointer) => {
+  if (!pointer) return undefined;
+  const canvasRect = scene?.game?.canvas?.getBoundingClientRect();
+  if (!canvasRect) return pointer.event;
+  return {
+    clientX: canvasRect.left + pointer.x,
+    clientY: canvasRect.top + pointer.y
+  };
+};
+
 const createFallbackBattle = (parent) => {
   if (parent) {
     parent.innerHTML = '';
@@ -65,8 +75,8 @@ export function createPhaserBattle({ parent, onHover, onHoverOut }) {
       const stat = this.add.text(0, 92, '방어 0 · 에너지 0', { fontSize: '13px', color: '#bfdbfe' }).setOrigin(0.5);
 
       const hitArea = this.add.zone(0, 0, 180, 190).setOrigin(0.5).setInteractive({ useHandCursor: true });
-      hitArea.on('pointerover', (pointer) => hoverHooks.onHover?.(actorKey, pointer?.event));
-      hitArea.on('pointermove', (pointer) => hoverHooks.onHover?.(actorKey, pointer?.event));
+      hitArea.on('pointerover', (pointer) => hoverHooks.onHover?.(actorKey, toClientPointerEvent(this, pointer)));
+      hitArea.on('pointermove', (pointer) => hoverHooks.onHover?.(actorKey, toClientPointerEvent(this, pointer)));
       hitArea.on('pointerout', () => hoverHooks.onHoverOut?.(actorKey));
 
       container.add([shadow, body, shine, ring, label, hpBg, hpFill, stat, hitArea]);
