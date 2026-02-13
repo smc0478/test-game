@@ -67,7 +67,12 @@ const BASE_CARD_LIBRARY = {
   C018: c('C018', '화염 공명', 'flame-concept', 'attack', 1, 7, 'Flame', [{ kind: 'attack', value: 7 }, { kind: 'nameRepeatBonus', value: 4 }], '같은 이름 카드를 같은 턴에 다시 사용할수록 반복당 추가 피해 4를 준다.'),
   C019: c('C019', '화염 예열', 'flame-concept', 'skill', 1, 6, 'Flame', [{ kind: 'nextAttackBonus', value: 6 }], '다음 공격 1회에 추가 피해 6을 부여한다.'),
   C020: c('C020', '화염 낙인', 'flame-concept', 'attack', 1, 11, 'Flame', [{ kind: 'attack', value: 11 }], '적에게 피해 11을 준다.'),
-  C021: c('C021', '화염 점화', 'flame-concept', 'attack', 1, 7, 'Flame', [{ kind: 'attack', value: 7 }, { kind: 'gainEnergy', value: 1 }], '적에게 피해 7을 주고 에너지 1을 회복한다.')
+  C021: c('C021', '화염 점화', 'flame-concept', 'attack', 1, 7, 'Flame', [{ kind: 'attack', value: 7 }, { kind: 'gainEnergy', value: 1 }], '적에게 피해 7을 주고 에너지 1을 회복한다.'),
+  C022: c('C022', '잎새 중갑', 'leaf-concept', 'skill', 2, 14, 'Leaf', [{ kind: 'block', value: 14 }], '코스트 2를 소모해 방어도 14를 얻는다.'),
+  C023: c('C023', '잎새 연쇄방진', 'leaf-concept', 'skill', 1, 6, 'Leaf', [{ kind: 'block', value: 6 }, { kind: 'nameRepeatBlockBonus', value: 4 }], '같은 이름 카드를 같은 턴에 다시 사용하면 반복당 방어도 4를 추가로 얻는다.'),
+  C024: c('C024', '잎새 역습', 'leaf-concept', 'attack', 1, 0, 'Leaf', [{ kind: 'attackFromBlock' }], '현재 방어도만큼 적에게 피해를 준다.'),
+  C025: c('C025', '잎새 가시덩굴', 'leaf-concept', 'skill', 1, 8, 'Leaf', [{ kind: 'block', value: 5 }, { kind: 'thorns', value: 3 }], '방어도 5와 가시 3을 얻는다.'),
+  C026: c('C026', '잎새 성역', 'leaf-concept', 'skill', 3, 18, 'Leaf', [{ kind: 'block', value: 18 }, { kind: 'retainBlockTurns', value: 2 }], '방어도 18을 얻고 내 방어도를 다음 2턴 동안 유지한다.')
 };
 
 const buildConceptCards = () => ({});
@@ -209,8 +214,8 @@ export const DECK_GUIDES = [
   },
   {
     title: '리프 방어 컨셉',
-    coreCards: ['C005', 'C006', 'C007', 'C008'],
-    play: '리프 카드를 연속 사용해 방어 시너지를 켜고 안정적으로 장기전을 운영하세요.'
+    coreCards: ['C006', 'C022', 'C024', 'C026'],
+    play: '리프 카드로 방어를 누적한 뒤 잎새 역습(C024)으로 전환하거나 성역(C026)으로 방어도를 유지하세요.'
   },
   {
     title: '기어 순환 컨셉',
