@@ -182,8 +182,9 @@ export function createEngine(game, hooks) {
     const blocked = Math.min(target.block, value);
     const real = Math.max(0, value - blocked);
     target.block -= blocked;
+    const before = target.hp;
     target.hp = clamp(target.hp - real, 0, target.maxHp);
-    return real;
+    return before - target.hp;
   };
 
   const restoreHp = (actor, baseValue) => {
