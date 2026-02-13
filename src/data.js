@@ -29,7 +29,7 @@ const c = (id, name, family, type, energyCost, baseValue, sigil, effect, descrip
   id, name, family, type, energyCost, baseValue, sigil, effect, description, image: art(name, sigil)
 });
 
-export const CARD_LIBRARY = {
+const BASE_CARD_LIBRARY = {
   C001: c('C001', '엠버 스트라이크', 'emberStrike', 'attack', 1, 7, 'Flame', [{ kind: 'attack', value: 7 }], '기본 화염 공격입니다.'),
   C002: c('C002', '블레이즈 러시', 'emberStrike', 'attack', 1, 8, 'Flame', [{ kind: 'attack', value: 8 }], '순수 공격 수치가 높은 기본 카드입니다.'),
   C003: c('C003', '쏜 잽', 'thorn', 'attack', 1, 8, 'Leaf', [{ kind: 'attack', value: 8 }], '가벼운 리프 공격 카드입니다.'),
@@ -66,6 +66,44 @@ export const CARD_LIBRARY = {
   C034: c('C034', '프리즘 잔상', 'prismBlade', 'attack', 2, 11, 'Gear', [{ kind: 'attack', value: 11 }, { kind: 'rewind', value: 1 }], '공격 후 직전 카드 효과를 이어붙여 콤보를 확장합니다.')
 };
 
+const generateExtraCards = () => {
+  const concepts = [
+    { name: '난수 도박', family: 'chaos', type: 'skill', sigil: 'Flame', cost: 1, base: 0, effect: (t) => [{ kind: 'gamble', value: 1 }, { kind: 'draw', value: t % 2 }], desc: '랜덤 결과를 굴려 순간 고점을 노립니다.' },
+    { name: '리프 방진', family: 'leafFort', type: 'skill', sigil: 'Leaf', cost: 1, base: 7, effect: (t) => [{ kind: 'block', value: 7 + t }, { kind: 'ifEnemyIntent', intent: 'attack', then: [{ kind: 'thorns', value: 2 }] }], desc: '방어 중심 운영에서 효율이 높은 리프 코어입니다.' },
+    { name: '가시 반격', family: 'leafFort', type: 'attack', sigil: 'Leaf', cost: 2, base: 8, effect: (t) => [{ kind: 'convertBlockToDamage', value: 100 }, { kind: 'attack', value: 4 + t }], desc: '쌓은 방어도를 공격으로 전환하는 반격형 카드입니다.' },
+    { name: '기어 순환', family: 'gearTempo', type: 'skill', sigil: 'Gear', cost: 1, base: 0, effect: (t) => [{ kind: 'draw', value: 1 + (t % 2) }, { kind: 'gainEnergy', value: 1 }], desc: '드로우와 에너지 확보로 템포를 밀어붙입니다.' },
+    { name: '오버히트 절단', family: 'emberStrike', type: 'attack', sigil: 'Flame', cost: 1, base: 8, effect: (t) => [{ kind: 'attack', value: 8 + t }, { kind: 'ifEnemyHpBelow', value: 26, then: [{ kind: 'attack', value: 4 + t }] }], desc: '마무리 구간에서 피해가 크게 증가합니다.' },
+    { name: '공허 갈증', family: 'voidMark', type: 'attack', sigil: 'Void', cost: 1, base: 7, effect: (t) => [{ kind: 'attack', value: 7 + t }, { kind: 'drain', value: 2 + (t % 2) }], desc: '공격과 흡혈을 동시에 챙기는 안정형 공허 카드입니다.' },
+    { name: '의도 추적', family: 'prismFlow', type: 'attack', sigil: 'Void', cost: 1, base: 6, effect: (t) => [{ kind: 'attack', value: 6 + t }, { kind: 'ifEnemyIntent', intent: 'attack', then: [{ kind: 'vulnerable', value: 1 }, { kind: 'draw', value: 1 }] }], desc: '적 의도에 맞춰 추가 이득을 얻는 카운터 카드입니다.' },
+    { name: '시간 메아리', family: 'chrono', type: 'skill', sigil: 'Gear', cost: 0, base: 0, effect: () => [{ kind: 'rewind', value: 1 }], desc: '직전 카드 효과를 재발동해 콤보를 늘립니다.' }
+  ];
+
+  const generated = {};
+  for (let id = 35; id <= 100; id += 1) {
+    const concept = concepts[(id - 35) % concepts.length];
+    const tier = Math.floor((id - 35) / concepts.length);
+    const cardId = `C${String(id).padStart(3, '0')}`;
+    const rank = tier + 1;
+    generated[cardId] = c(
+      cardId,
+      `${concept.name} ${rank}`,
+      concept.family,
+      concept.type,
+      concept.cost,
+      concept.base + tier,
+      concept.sigil,
+      concept.effect(tier),
+      `${concept.desc} (확장 카드 ${cardId})`
+    );
+  }
+  return generated;
+};
+
+export const CARD_LIBRARY = {
+  ...BASE_CARD_LIBRARY,
+  ...generateExtraCards()
+};
+
 export const STARTER_DECK = ['C001', 'C003', 'C004', 'C006', 'C007', 'C008', 'C010', 'C012', 'C014', 'C015', 'C021', 'C023'];
 
 export const REGIONS = [
@@ -82,3 +120,35 @@ export const ENEMY_ARCHETYPES = {
   voidReaper: { id: 'voidReaper', name: '공허 수확자', hp: 72, deck: ['C005', 'C010', 'C012', 'C018', 'C023', 'C026', 'C027'] },
   prismOverlord: { id: 'prismOverlord', name: '프리즘 군주', hp: 78, deck: ['C001', 'C011', 'C012', 'C021', 'C023', 'C026', 'C030', 'C033', 'C034'] }
 };
+
+export const ENEMY_BESTIARY = {
+  emberFox: { title: '잿불 여우', concept: '화염 폭딜형', pattern: '공격 카드를 우선하지만 연계 드로우 카드로 손패를 늘립니다.', counter: '리프 방어 카드와 취약 대응으로 폭딜 타이밍을 넘기세요.' },
+  ironShell: { title: '철갑 딱정벌레', concept: '방어-반격형', pattern: '방어 카드를 섞어 쓰고 연쇄 톱니로 반격합니다.', counter: '보이드 계열로 방어를 깎고 강타를 몰아주세요.' },
+  gearSentinel: { title: '기어 센티넬', concept: '템포 순환형', pattern: '드로우/에너지 카드 비중이 높아 한 턴 폭발이 가능합니다.', counter: '빠른 킬각을 만들거나 의도 전환으로 템포를 끊으세요.' },
+  thornDruid: { title: '가시 드루이드', concept: '지속 생존형', pattern: '회복+가시를 활용해 장기전을 유도합니다.', counter: '화염 고점 카드로 짧은 턴에 큰 피해를 누적하세요.' },
+  voidReaper: { title: '공허 수확자', concept: '취약-흡혈형', pattern: '취약 부여 후 흡혈로 체력을 회복합니다.', counter: '리프 방어로 취약 턴을 버티고 기어 순환으로 카드 질을 높이세요.' },
+  prismOverlord: { title: '프리즘 군주', concept: '복합 시너지 보스', pattern: '랜덤/공허/화염 카드를 섞어 다양한 의도를 보입니다.', counter: '적 의도를 보고 카운터 카드(공허 역류/결정 장막) 타이밍을 맞추세요.' }
+};
+
+export const DECK_GUIDES = [
+  {
+    title: '랜덤 폭발 컨셉 (카오스)',
+    coreCards: ['C033', 'C035', 'C043', 'C051'],
+    play: '기어 순환 카드로 손패를 보충하고 카이오스/난수 도박을 연속 사용해 고점을 노립니다.'
+  },
+  {
+    title: '리프 방어-반격 컨셉',
+    coreCards: ['C006', 'C016', 'C029', 'C037', 'C038'],
+    play: '방어도를 먼저 크게 쌓은 뒤 가시 반격/역전 톱니로 한 번에 피해를 전환합니다.'
+  },
+  {
+    title: '공허 카운터 컨셉',
+    coreCards: ['C026', 'C027', 'C039', 'C041', 'C045'],
+    play: '적 의도가 공격일 때 추가 이득을 챙기는 카드로 에너지/드로우를 벌어 효율적으로 굴립니다.'
+  },
+  {
+    title: '기어 템포 엔진 컨셉',
+    coreCards: ['C015', 'C031', 'C040', 'C042', 'C050'],
+    play: '에너지+드로우 루프를 만들어 고코스트 피니셔를 같은 턴에 이어서 사용합니다.'
+  }
+];

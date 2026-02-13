@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>카드 도감 | 시너지 턴 카드 배틀 v0.8</title>
+  <title>카드/적 도감 | 시너지 턴 카드 배틀 v1.0</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -11,7 +11,7 @@
     <header class="top-bar">
       <div>
         <h1>카드 도감</h1>
-        <p class="subtitle">전체 카드와 효과를 한 페이지에서 확인하세요.</p>
+        <p class="subtitle">카드 100장, 적 도감, 추천 덱 컨셉을 한 페이지에서 확인하세요.</p>
       </div>
       <div class="controls">
         <a href="index.html"><button type="button">전투 화면으로 돌아가기</button></a>
@@ -20,8 +20,20 @@
 
     <section class="panel">
       <h2>전체 카드 목록</h2>
-      <p class="small">버전 v0.8 카드 풀을 기준으로 렌더링합니다.</p>
+      <p class="small">버전 v1.0 카드 풀(100장)을 기준으로 렌더링합니다.</p>
       <div id="codex-cards" class="hand"></div>
+    </section>
+
+    <section class="panel">
+      <h2>적 도감</h2>
+      <p class="small">적 컨셉, 패턴, 대응 팁을 확인하세요.</p>
+      <div id="enemy-codex" class="deck-list"></div>
+    </section>
+
+    <section class="panel">
+      <h2>추천 덱 운영 가이드</h2>
+      <p class="small">핵심 카드만 모였을 때 효율이 높은 운용 예시입니다.</p>
+      <div id="deck-guides" class="deck-list"></div>
     </section>
   </main>
   <script type="module" src="./codex.js"></script>
