@@ -72,6 +72,7 @@ export function createPhaserBattle({ parent, onHover, onHoverOut }) {
       const label = this.add.text(0, -84, fallbackName, { fontSize: '18px', color: '#f8fafc', fontStyle: 'bold' }).setOrigin(0.5);
       const hpBg = this.add.rectangle(0, -62, 126, 10, 0x111827, 1).setOrigin(0.5);
       const hpFill = this.add.rectangle(-63, -62, 126, 10, 0x22c55e, 1).setOrigin(0, 0.5);
+      const hpText = this.add.text(0, -46, '0 / 0', { fontSize: '13px', color: '#e2e8f0' }).setOrigin(0.5);
       const stat = this.add.text(0, 92, '방어 0 · 에너지 0', { fontSize: '13px', color: '#bfdbfe' }).setOrigin(0.5);
 
       const hitArea = this.add.zone(0, 0, 180, 190).setOrigin(0.5).setInteractive({ useHandCursor: true });
@@ -79,8 +80,8 @@ export function createPhaserBattle({ parent, onHover, onHoverOut }) {
       hitArea.on('pointermove', (pointer) => hoverHooks.onHover?.(actorKey, toClientPointerEvent(this, pointer)));
       hitArea.on('pointerout', () => hoverHooks.onHoverOut?.(actorKey));
 
-      container.add([shadow, body, shine, ring, label, hpBg, hpFill, stat, hitArea]);
-      return { container, label, hpFill, stat };
+      container.add([shadow, body, shine, ring, label, hpBg, hpFill, hpText, stat, hitArea]);
+      return { container, label, hpFill, hpText, stat };
     }
 
     layout(width, height) {
@@ -104,10 +105,12 @@ export function createPhaserBattle({ parent, onHover, onHoverOut }) {
       if (!snapshot) return;
       this.player.label.setText('플레이어');
       this.player.hpFill.displayWidth = 126 * safeRate(snapshot.playerHp, snapshot.playerMaxHp);
+      this.player.hpText.setText(`${snapshot.playerHp} / ${snapshot.playerMaxHp}`);
       this.player.stat.setText(`방어 ${snapshot.playerBlock} · 에너지 ${snapshot.playerEnergy}`);
 
       this.enemy.label.setText(snapshot.enemyName || '적');
       this.enemy.hpFill.displayWidth = 126 * safeRate(snapshot.enemyHp, snapshot.enemyMaxHp);
+      this.enemy.hpText.setText(`${snapshot.enemyHp} / ${snapshot.enemyMaxHp}`);
       this.enemy.stat.setText(`방어 ${snapshot.enemyBlock} · 에너지 ${snapshot.enemyEnergy}`);
 
       this.infoLeft.setText(`라운드 ${snapshot.roundLabel}\n적 의도: ${snapshot.enemyIntent}`);
