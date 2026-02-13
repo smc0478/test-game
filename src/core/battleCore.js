@@ -1,7 +1,7 @@
-import { CARD_LIBRARY, STARTER_DECK, REGIONS, ROUTE_TABLE, ROUTE_MODIFIERS, ENEMY_ARCHETYPES } from './data.js';
-import { STATES, SIGILS, MAX_ENERGY, MAX_HAND } from './constants.js';
-import { clamp, shuffle } from './utils.js';
-import { saveRunSnapshot, loadRunSnapshot, clearRunSnapshot, addHallOfFameRecord, hasSavedRun } from './storage.js';
+import { CARD_LIBRARY, STARTER_DECK, REGIONS, ROUTE_TABLE, ROUTE_MODIFIERS, ENEMY_ARCHETYPES } from '../data.js';
+import { STATES, SIGILS, MAX_ENERGY, MAX_HAND } from '../constants.js';
+import { clamp, shuffle } from '../utils.js';
+import { saveRunSnapshot, loadRunSnapshot, clearRunSnapshot, addHallOfFameRecord, hasSavedRun } from '../storage.js';
 
 const cloneCard = (id) => ({ ...CARD_LIBRARY[id], effect: CARD_LIBRARY[id].effect.map((e) => ({ ...e })) });
 
