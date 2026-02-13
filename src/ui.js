@@ -189,9 +189,13 @@ export function render(ui, game, actions) {
   ui.enemyIntent.textContent = game.enemy?.intent || '-';
   ui.enemyThreat.textContent = game.enemy?.threatLevel || 1;
   const intentDamage = game.enemy?.intentDamage;
+  const intentPlan = game.enemy?.intentPlan || [];
+  const intentPlanText = intentPlan.length
+    ? ` · 예상 카드 ${intentPlan.map((step) => `${step.name}${step.damage === null ? '(계산 불가)' : `(${step.damage})`}`).join(' → ')}`
+    : '';
   ui.enemyActions.textContent = intentDamage === null || intentDamage === undefined
-    ? '에너지 소진형'
-    : `에너지 소진형 · 예상 공격 ${intentDamage}`;
+    ? `에너지 소진형${intentPlanText}`
+    : `에너지 소진형 · 예상 공격 ${intentDamage}${intentPlanText}`;
   ui.playerStatus.textContent = statusSummary(game.player);
   ui.enemyStatus.textContent = statusSummary(game.enemy);
   ui.regionName.textContent = game.region;
