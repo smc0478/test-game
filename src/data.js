@@ -96,7 +96,7 @@ const generateExtraCards = () => {
   ];
 
   const generated = {};
-  for (let id = 35; id <= 160; id += 1) {
+  for (let id = 35; id <= 168; id += 1) {
     const concept = concepts[(id - 35) % concepts.length];
     const tier = Math.floor((id - 35) / concepts.length);
     const cardId = `C${String(id).padStart(3, '0')}`;
@@ -124,16 +124,16 @@ export const CARD_LIBRARY = {
 export const STARTER_DECK = ['C001', 'C003', 'C004', 'C006', 'C007', 'C008', 'C010', 'C012', 'C014', 'C015', 'C021', 'C023'];
 
 export const REGIONS = [
-  { id: 'ashCanyon', name: '잿빛 협곡', tier: 1, enemies: ['emberFox', 'ironShell', 'sandBandit', 'cinderHound'] },
-  { id: 'forestRidge', name: '바람숲 능선', tier: 1, enemies: ['thornDruid', 'mistArcher', 'vineGiant', 'mossStalker'] },
-  { id: 'clockBasin', name: '시계분지', tier: 2, enemies: ['gearSentinel', 'steamKnight', 'arcSniper', 'brassMonk'] },
-  { id: 'ruinHarbor', name: '폐허 항만', tier: 2, enemies: ['ironShell', 'sandBandit', 'voidAcolyte', 'reefHunter'] },
-  { id: 'stormCliff', name: '폭풍 절벽', tier: 2, enemies: ['stormRider', 'arcSniper', 'mistArcher', 'brassMonk'] },
-  { id: 'emberForge', name: '용광 화로', tier: 2, enemies: ['cinderHound', 'forgeTitan', 'gearSentinel', 'steamKnight'] },
-  { id: 'abyssGate', name: '심연 관문', tier: 3, enemies: ['voidReaper', 'voidAcolyte', 'prismOverlord', 'abyssLeech'] },
-  { id: 'moonLibrary', name: '월광 서고', tier: 3, enemies: ['moonScholar', 'chronoWatcher', 'arcSniper', 'voidAcolyte'] },
-  { id: 'prismSanctum', name: '프리즘 성소', tier: 3, enemies: ['prismOverlord', 'ancientWarden', 'chronoWatcher', 'prismLancer'] },
-  { id: 'voidCitadel', name: '공허 성채', tier: 4, enemies: ['voidReaper', 'ancientWarden', 'prismOverlord', 'citadelJudge'] }
+  { id: 'ashCanyon', name: '잿빛 협곡', tier: 1, enemies: ['emberFox', 'ironShell', 'sandBandit', 'cinderHound', 'chaosJuggler'] },
+  { id: 'forestRidge', name: '바람숲 능선', tier: 1, enemies: ['thornDruid', 'mistArcher', 'vineGiant', 'mossStalker', 'leafBulwark'] },
+  { id: 'clockBasin', name: '시계분지', tier: 2, enemies: ['gearSentinel', 'steamKnight', 'arcSniper', 'brassMonk', 'gearLooper'] },
+  { id: 'ruinHarbor', name: '폐허 항만', tier: 2, enemies: ['ironShell', 'sandBandit', 'voidAcolyte', 'reefHunter', 'thornAvenger'] },
+  { id: 'stormCliff', name: '폭풍 절벽', tier: 2, enemies: ['stormRider', 'arcSniper', 'mistArcher', 'brassMonk', 'prismTracker'] },
+  { id: 'emberForge', name: '용광 화로', tier: 2, enemies: ['cinderHound', 'forgeTitan', 'gearSentinel', 'steamKnight', 'emberExecutioner'] },
+  { id: 'abyssGate', name: '심연 관문', tier: 3, enemies: ['voidReaper', 'voidAcolyte', 'prismOverlord', 'abyssLeech', 'voidDrinker'] },
+  { id: 'moonLibrary', name: '월광 서고', tier: 3, enemies: ['moonScholar', 'chronoWatcher', 'arcSniper', 'voidAcolyte', 'chronoEcho'] },
+  { id: 'prismSanctum', name: '프리즘 성소', tier: 3, enemies: ['prismOverlord', 'ancientWarden', 'chronoWatcher', 'prismLancer', 'prismTracker'] },
+  { id: 'voidCitadel', name: '공허 성채', tier: 4, enemies: ['voidReaper', 'ancientWarden', 'prismOverlord', 'citadelJudge', 'voidDrinker'] }
 ];
 
 export const ROUTE_TABLE = [
@@ -184,7 +184,15 @@ export const ENEMY_ARCHETYPES = {
   prismLancer: { id: 'prismLancer', name: '프리즘 창병', hp: 102, deck: ['C021', 'C023', 'C034', 'C072', 'C088', 'C104'], image: enemyArt('프리즘 창병', '🗡️', '#f0abfc', '#581c87') },
   citadelJudge: { id: 'citadelJudge', name: '성채 심판자', hp: 114, deck: ['C024', 'C029', 'C042', 'C075', 'C091', 'C107'], image: enemyArt('성채 심판자', '⚖️', '#cbd5e1', '#1e293b') },
   duskHarvester: { id: 'duskHarvester', name: '황혼 수확자', hp: 96, deck: ['C026', 'C039', 'C045', 'C081', 'C097', 'C113'], image: enemyArt('황혼 수확자', '🌒', '#ddd6fe', '#4c1d95') },
-  auroraWisp: { id: 'auroraWisp', name: '오로라 정령', hp: 88, deck: ['C014', 'C019', 'C025', 'C079', 'C095', 'C111'], image: enemyArt('오로라 정령', '✨', '#67e8f9', '#164e63') }
+  auroraWisp: { id: 'auroraWisp', name: '오로라 정령', hp: 88, deck: ['C014', 'C019', 'C025', 'C079', 'C095', 'C111'], image: enemyArt('오로라 정령', '✨', '#67e8f9', '#164e63') },
+  chaosJuggler: { id: 'chaosJuggler', name: '혼돈 곡예사', hp: 90, deck: ['C033', 'C051', 'C083', 'C115', 'C147', 'C163'], image: enemyArt('혼돈 곡예사', '🎲', '#f97316', '#7c2d12') },
+  leafBulwark: { id: 'leafBulwark', name: '수호 잎새', hp: 106, deck: ['C037', 'C069', 'C101', 'C133', 'C069', 'C164'], image: enemyArt('수호 잎새', '🛡️', '#22c55e', '#14532d') },
+  thornAvenger: { id: 'thornAvenger', name: '가시 집행자', hp: 98, deck: ['C038', 'C070', 'C102', 'C134', 'C102', 'C165'], image: enemyArt('가시 집행자', '🌵', '#4ade80', '#166534') },
+  gearLooper: { id: 'gearLooper', name: '루프 기어', hp: 92, deck: ['C039', 'C071', 'C103', 'C135', 'C103', 'C166'], image: enemyArt('루프 기어', '⚙️', '#38bdf8', '#0c4a6e') },
+  emberExecutioner: { id: 'emberExecutioner', name: '잿불 집행관', hp: 100, deck: ['C040', 'C072', 'C104', 'C136', 'C104', 'C167'], image: enemyArt('잿불 집행관', '🪓', '#fb923c', '#7f1d1d') },
+  voidDrinker: { id: 'voidDrinker', name: '공허 포식자', hp: 104, deck: ['C041', 'C073', 'C105', 'C137', 'C105', 'C168'], image: enemyArt('공허 포식자', '🩸', '#a855f7', '#4c1d95') },
+  prismTracker: { id: 'prismTracker', name: '프리즘 추적자', hp: 96, deck: ['C042', 'C074', 'C106', 'C138', 'C106', 'C161'], image: enemyArt('프리즘 추적자', '🎯', '#c084fc', '#312e81') },
+  chronoEcho: { id: 'chronoEcho', name: '시공 메아리', hp: 98, deck: ['C043', 'C075', 'C107', 'C139', 'C107', 'C162'], image: enemyArt('시공 메아리', '⏱️', '#67e8f9', '#1e3a8a') }
 };
 
 export const ENEMY_BESTIARY = {
@@ -213,7 +221,15 @@ export const ENEMY_BESTIARY = {
   prismLancer: { title: '프리즘 창병', concept: '관통 돌격형', pattern: '다문양 연계로 짧은 턴에 폭딜을 만듭니다.', counter: '적 버스트 직전에 방어를 집중해 손실을 최소화하세요.' },
   citadelJudge: { title: '성채 심판자', concept: '요새 판정형', pattern: '방어 누적 뒤 변환 공격으로 큰 반격을 가합니다.', counter: '방어 감소 카드와 고점 공격 카드를 같은 턴에 묶어 사용하세요.' },
   duskHarvester: { title: '황혼 수확자', concept: '후반 추격형', pattern: '공허 카드 비율이 높아 후반으로 갈수록 위협이 커집니다.', counter: '체력 우위를 유지한 채 중반 이전에 승기를 잡으세요.' },
-  auroraWisp: { title: '오로라 정령', concept: '변칙 교란형', pattern: '드로우·지원 스킬로 의도를 자주 바꿔 예측을 어렵게 합니다.', counter: '의도 카운터 카드보다 안정 방어/고정 딜 카드를 우선하세요.' }
+  auroraWisp: { title: '오로라 정령', concept: '변칙 교란형', pattern: '드로우·지원 스킬로 의도를 자주 바꿔 예측을 어렵게 합니다.', counter: '의도 카운터 카드보다 안정 방어/고정 딜 카드를 우선하세요.' },
+  chaosJuggler: { title: '혼돈 곡예사', concept: '난수 도박형', pattern: '난수 도박 계열을 연속으로 사용해 전투 흐름을 요동치게 만듭니다.', counter: '안정 방어 카드를 우선해 변동 폭을 흡수하세요.' },
+  leafBulwark: { title: '수호 잎새', concept: '리프 방진형', pattern: '높은 방어와 가시를 반복해 손실 없는 턴을 만들려고 합니다.', counter: '방어 감소 카드와 고정 피해 카드로 방어 루프를 끊으세요.' },
+  thornAvenger: { title: '가시 집행자', concept: '가시 반격형', pattern: '방어 전환 카드를 축적한 뒤 한 번에 반격 피해를 몰아칩니다.', counter: '반격 턴 전에 버스트를 몰아 짧게 끝내는 것이 안전합니다.' },
+  gearLooper: { title: '루프 기어', concept: '기어 순환형', pattern: '드로우 중심 카드로 손패를 빠르게 교체하며 답패를 찾습니다.', counter: '턴이 길어지기 전에 핵심 공격을 집중하세요.' },
+  emberExecutioner: { title: '잿불 집행관', concept: '오버히트 절단형', pattern: '체력이 낮아지면 추가 타격이 붙는 화염 카드로 마무리를 노립니다.', counter: '중반부터 방어를 유지해 처형 구간 진입을 늦추세요.' },
+  voidDrinker: { title: '공허 포식자', concept: '공허 갈증형', pattern: '흡혈 공격을 반복해 소모전을 유리하게 만듭니다.', counter: '한 턴 고점 피해로 회복 턴 자체를 봉쇄하세요.' },
+  prismTracker: { title: '프리즘 추적자', concept: '의도 추적형', pattern: '의도 조건 카드를 중심으로 플레이어의 공격 턴을 역이용합니다.', counter: '의도 노출 턴에는 스킬 카드 위주로 템포를 조절하세요.' },
+  chronoEcho: { title: '시공 메아리', concept: '시간 메아리형', pattern: 'rewind 계열을 반복해 같은 카드를 여러 번 재사용합니다.', counter: '회복보다 빠른 폭딜로 재사용 턴을 주지 마세요.' }
 };
 
 export const DECK_GUIDES = [
