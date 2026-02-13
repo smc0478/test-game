@@ -80,6 +80,30 @@ AI Multi-Agent Development Workflow (Card Battle Project)
 
 ---
 
+## 1.4 Documentation Writer (Docs)
+
+### 책임
+- 프로젝트 설명 문서 작성
+- 시스템 아키텍처 문서 작성
+- 카드 설계 의도 문서 작성
+- 변경 내역 요약
+- 신규 개발자 온보딩 문서 작성
+
+### 규칙
+- GAME_SPEC.md와 구현 코드 기반으로 작성
+- 스펙과 불일치하지 않도록 한다
+- 구조적이고 명확하게 작성
+- 추측 금지, 구현 기반 설명
+
+### 산출물
+- docs/README.md
+- docs/ARCHITECTURE.md
+- docs/CARD_DESIGN.md
+- docs/CHANGELOG.md
+- docs/DEVELOPER_GUIDE.md
+
+---
+
 # 2. Core Architectural Principles
 
 ## 2.1 State Machine Structure
