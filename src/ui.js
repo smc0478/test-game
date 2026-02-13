@@ -38,6 +38,25 @@ const effectText = (effect) => {
 const SIGIL_LABELS = { Flame: '화염', Leaf: '리프', Gear: '기어', Void: '공허', Burst: '버스트' };
 const sigilIcon = (sigil) => ({ Flame: '🔥', Leaf: '🍃', Gear: '⚙️', Void: '🌌', Burst: '💥' }[sigil] || '✨');
 
+const updateBattleHandDensity = (ui, handCount) => {
+  const maxCardWidth = 200;
+  const minCardWidth = 138;
+  const gap = 10;
+  const containerWidth = ui.hand.clientWidth || 0;
+  const requiredWidth = handCount * maxCardWidth + Math.max(0, handCount - 1) * gap;
+  const shouldCompress = handCount > 0 && containerWidth > 0 && requiredWidth > containerWidth;
+
+  ui.hand.classList.toggle('is-compressed', shouldCompress);
+  if (!shouldCompress) {
+    ui.hand.style.removeProperty('--battle-card-width');
+    return;
+  }
+
+  const targetWidth = Math.floor((containerWidth - Math.max(0, handCount - 1) * gap) / handCount);
+  const compressedWidth = Math.max(minCardWidth, Math.min(maxCardWidth, targetWidth));
+  ui.hand.style.setProperty('--battle-card-width', `${compressedWidth}px`);
+};
+
 const cardTemplate = (card) => `<div class='card-top'>
   <span class='sigil-chip sigil-${card.sigil.toLowerCase()}'>${sigilIcon(card.sigil)} ${SIGIL_LABELS[card.sigil] || card.sigil}</span>
   <span class='cost-chip'>코스트 ${card.energyCost}</span>
@@ -228,6 +247,7 @@ export function render(ui, game, actions) {
     wrap.appendChild(btn);
     ui.hand.appendChild(wrap);
   });
+  updateBattleHandDensity(ui, game.player.hand.length);
 
   ui.synergyInfo.innerHTML = '';
   SIGILS.forEach((sigil) => {
