@@ -36,7 +36,7 @@ const keys = {
 const game = {
   state: 'ready',
   player: {
-    x: canvas.width / 2 - gameConfig.playerSize / 2,
+    x: canvas.width / 2,
     y: canvas.height - 64,
     size: gameConfig.playerSize,
   },
@@ -51,7 +51,7 @@ const game = {
 
 function resetGame() {
   game.state = 'ready';
-  game.player.x = canvas.width / 2 - gameConfig.playerSize / 2;
+  game.player.x = canvas.width / 2;
   game.player.y = canvas.height - 64;
   game.enemies = [];
   game.score = 0;
@@ -172,9 +172,9 @@ function updatePlaying(dtSec, nowMs) {
   clampPlayerToBounds();
 
   const spawnIntervalMs = getCurrentSpawnIntervalMs();
-  if (nowMs - game.lastSpawnMs >= spawnIntervalMs) {
+  while (nowMs - game.lastSpawnMs >= spawnIntervalMs) {
     spawnEnemy();
-    game.lastSpawnMs = nowMs;
+    game.lastSpawnMs += spawnIntervalMs;
   }
 
   const enemySpeed = getCurrentEnemySpeed();
