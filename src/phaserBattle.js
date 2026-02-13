@@ -1,7 +1,7 @@
 let hoverHooks = { onHover: null, onHoverOut: null };
 
 const safeRate = (value, max) => (max ? Math.max(0, Math.min(1, value / max)) : 0);
-const BATTLE_STAGE_HEIGHT = 620;
+const BATTLE_STAGE_HEIGHT = 760;
 
 const toClientPointerEvent = (scene, pointer) => {
   if (!pointer) return undefined;
