@@ -1,4 +1,4 @@
-import { CARD_LIBRARY } from './src/data.js';
+import { CARD_LIBRARY, ENEMY_ARCHETYPES, ENEMY_BESTIARY, DECK_GUIDES } from './src/data.js';
 
 const effectText = (effect) => {
   const map = {
@@ -40,4 +40,32 @@ Object.values(CARD_LIBRARY).forEach((card) => {
   node.className = 'card mini';
   node.innerHTML = cardTemplate(card);
   wrap.appendChild(node);
+});
+
+const enemyWrap = document.querySelector('#enemy-codex');
+Object.values(ENEMY_ARCHETYPES).forEach((enemy) => {
+  const detail = ENEMY_BESTIARY[enemy.id];
+  const node = document.createElement('article');
+  node.className = 'guide-item';
+  node.innerHTML = `
+    <h3>${detail?.title || enemy.name}</h3>
+    <p>컨셉: ${detail?.concept || '-'}</p>
+    <p>HP: ${enemy.hp}</p>
+    <p>덱: ${enemy.deck.join(', ')}</p>
+    <p class='small'>패턴: ${detail?.pattern || '-'}</p>
+    <p class='small'>대응 팁: ${detail?.counter || '-'}</p>
+  `;
+  enemyWrap.appendChild(node);
+});
+
+const guideWrap = document.querySelector('#deck-guides');
+DECK_GUIDES.forEach((guide) => {
+  const node = document.createElement('article');
+  node.className = 'guide-item';
+  node.innerHTML = `
+    <h3>${guide.title}</h3>
+    <p>핵심 카드: ${guide.coreCards.join(', ')}</p>
+    <p class='small'>운용법: ${guide.play}</p>
+  `;
+  guideWrap.appendChild(node);
 });

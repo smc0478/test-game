@@ -252,8 +252,16 @@ export function createEngine(game, hooks) {
   const chooseEnemyCard = () => {
     const options = game.enemy.hand.filter((c) => c.energyCost <= game.enemy.energy);
     if (!options.length) return null;
-    options.sort((a, b) => b.baseValue - a.baseValue);
-    const best = options[0];
+
+    const preferType = game.enemy.intentType === 'attack' ? 'skill' : 'attack';
+    const typedOptions = options.filter((c) => c.type === preferType);
+    const typePool = typedOptions.length ? typedOptions : options;
+
+    const nonRepeatPool = typePool.filter((c) => c.id !== game.enemy.lastPlayedCardId);
+    const finalPool = nonRepeatPool.length ? nonRepeatPool : typePool;
+
+    finalPool.sort((a, b) => b.baseValue - a.baseValue);
+    const best = finalPool[0];
     game.enemy.intentType = best.type === 'attack' ? 'attack' : 'skill';
     game.enemy.intent = best.type === 'attack' ? `${best.name} (공격)` : `${best.name} (스킬)`;
     return best;

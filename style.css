@@ -126,3 +126,12 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   padding: 8px 10px;
   font-size: 0.84rem;
 }
+
+.guide-item {
+  background: #0b1220;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+}
+.guide-item h3 { margin: 0 0 6px; }
+.guide-item p { margin: 4px 0; font-size: 0.86rem; }
