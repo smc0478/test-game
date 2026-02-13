@@ -28,7 +28,7 @@ export function createGame() {
   return {
     state: STATES.READY, round: 0, totalRounds: 10, activeSide: 'player',
     region: '-', score: 0, deck: [...STARTER_DECK], rewardChoices: [],
-    rewardAccepted: false, removedInDeckBuild: false, discoverChoices: [],
+    removeChoices: [], rewardAccepted: false, removedInDeckBuild: false, discoverChoices: [],
     routeChoices: [], currentRoute: null,
     playedCardsHistory: [],
     logs: ['대기 중: 런 시작 버튼을 누르세요.'],
@@ -150,15 +150,35 @@ export function createEngine(game, hooks) {
     return real;
   };
 
-  const removeCardEverywhere = (cardId) => {
+  const removeCardEverywhere = (cardId, { skipDeck = false } = {}) => {
     const removeOnce = (pile) => {
       const index = pile.findIndex((idOrCard) => (typeof idOrCard === 'string' ? idOrCard : idOrCard.id) === cardId);
       if (index >= 0) pile.splice(index, 1);
     };
-    removeOnce(game.deck);
+    if (!skipDeck) removeOnce(game.deck);
     removeOnce(game.player.drawPile);
     removeOnce(game.player.discardPile);
     removeOnce(game.player.hand);
+  };
+
+
+  const createRandomRewardChoices = () => {
+    const pool = shuffle(Object.keys(CARD_LIBRARY));
+    return pool.slice(0, 3).map(cloneCard);
+  };
+
+  const createRandomRemovalChoices = () => {
+    if (game.deck.length <= 5) return [];
+    const indexed = game.deck.map((id, deckIndex) => ({ id, deckIndex }));
+    return shuffle(indexed).slice(0, Math.min(3, indexed.length));
+  };
+
+  const removeDeckCardByIndex = (deckIndex) => {
+    const cardId = game.deck[deckIndex];
+    if (!cardId) return null;
+    game.deck.splice(deckIndex, 1);
+    removeCardEverywhere(cardId, { skipDeck: true });
+    return cardId;
   };
 
   const updateSynergy = (actor, card) => {
@@ -368,6 +388,7 @@ export function createEngine(game, hooks) {
     game.player = createActor({ name: '플레이어', hp: 84, deckIds: game.deck });
     game.enemy = null;
     game.rewardChoices = [];
+    game.removeChoices = [];
     game.rewardAccepted = false;
     game.removedInDeckBuild = false;
     game.discoverChoices = [];
@@ -403,8 +424,8 @@ export function createEngine(game, hooks) {
         clearRunSnapshot();
       } else {
         game.state = STATES.DECK_BUILD;
-        const pool = shuffle(Object.keys(CARD_LIBRARY)).slice(0, 3);
-        game.rewardChoices = pool.map(cloneCard);
+        game.rewardChoices = createRandomRewardChoices();
+        game.removeChoices = createRandomRemovalChoices();
         game.rewardAccepted = false;
         game.routeChoices = getRouteCandidates();
       }
@@ -517,16 +538,23 @@ export function createEngine(game, hooks) {
     renderAndPersist();
   };
 
-  const removeDeckCard = (cardId) => {
+  const removeDeckCard = (deckIndex) => {
     if (game.state !== STATES.DECK_BUILD || game.removedInDeckBuild) return;
     if (game.deck.length <= 5) {
       log('덱이 너무 얇아 더 이상 제거할 수 없습니다.', 'bad');
       return;
     }
-    removeCardEverywhere(cardId);
+    const selected = game.removeChoices.find((choice) => choice.deckIndex === deckIndex);
+    if (!selected) {
+      log('이번 라운드 랜덤 제거 후보에 없는 카드입니다.', 'bad');
+      return;
+    }
+    const removedCardId = removeDeckCardByIndex(deckIndex);
+    if (!removedCardId) return;
     game.removedInDeckBuild = true;
+    game.removeChoices = [];
     game.score += 6;
-    log(`덱 정리: ${CARD_LIBRARY[cardId].name} 제거`);
+    log(`덱 정리: ${CARD_LIBRARY[removedCardId].name} 제거`);
     renderAndPersist();
   };
 

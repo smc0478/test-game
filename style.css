@@ -74,6 +74,9 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 10px;
 }
+.hand.compact {
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+}
 
 .card {
   background: linear-gradient(180deg, #0e1532, #090f22 52%);
@@ -228,6 +231,27 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 .controls-bottom { margin-left: auto; }
 
+.canvas-deckbuild-overlay {
+  position: absolute;
+  inset: 12px;
+  z-index: 4;
+  overflow-y: auto;
+  border-radius: 12px;
+  border: 1px solid #5f7ecc;
+  background: rgba(7, 12, 30, 0.92);
+  padding: 12px;
+}
+.canvas-deckbuild-overlay h3,
+.canvas-deckbuild-overlay h4 {
+  margin: 0 0 8px;
+}
+.canvas-build-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 8px;
+}
+
 @media (max-width: 860px) {
   .top-bar,
   .battle-controls {
@@ -243,5 +267,8 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   .vs-mark {
     text-align: center;
     margin: 0;
+  }
+  .canvas-build-grid {
+    grid-template-columns: 1fr;
   }
 }

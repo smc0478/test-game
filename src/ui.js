@@ -201,7 +201,22 @@ class BattleCanvas {
 
     ctx.fillStyle = '#e2e8f0';
     ctx.font = '15px sans-serif';
-    ctx.fillText(`턴: ${snapshot.turnOwner}`, w * 0.5, h * 0.14);
+    ctx.fillText(`턴: ${snapshot.turnOwner} · 상태: ${snapshot.stateLabel}`, w * 0.5, h * 0.14);
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.72)';
+    ctx.fillRect(18, 14, 260, 64);
+    ctx.fillStyle = '#cfe4ff';
+    ctx.font = '13px sans-serif';
+    ctx.fillText(`라운드 ${snapshot.roundLabel}`, 30, 38);
+    ctx.fillText(`적 의도: ${snapshot.enemyIntent}`, 30, 60);
+
+    ctx.textAlign = 'right';
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.72)';
+    ctx.fillRect(w - 278, 14, 260, 64);
+    ctx.fillStyle = '#cfe4ff';
+    ctx.fillText(`손패 ${snapshot.handCount}장 · 사용 가능 ${snapshot.playableCount}장`, w - 30, 38);
+    ctx.fillText(snapshot.quickHint, w - 30, 60);
   }
 }
 
@@ -241,7 +256,7 @@ export function createUiBindings() {
     playerDraw: document.querySelector('#player-draw'),
     playerDiscard: document.querySelector('#player-discard'),
     deckSize: document.querySelector('#deck-size'),
-    rewardPanel: document.querySelector('#reward-panel'),
+    canvasDeckBuildOverlay: document.querySelector('#canvas-deckbuild-overlay'),
     rewardCards: document.querySelector('#reward-cards'),
     skipRewardBtn: document.querySelector('#skip-reward-btn'),
     finishDeckBuildBtn: document.querySelector('#finish-deck-build-btn'),
@@ -297,6 +312,12 @@ export function render(ui, game, actions) {
   ui.battleCanvasRenderer.update({
     activeSide: game.activeSide,
     turnOwner: turnOwnerLabel,
+    stateLabel: game.state,
+    roundLabel: `${Math.min(game.round + 1, game.totalRounds)} / ${game.totalRounds}`,
+    enemyIntent: game.enemy?.intent || '-',
+    handCount: game.player.hand.length,
+    playableCount: game.player.hand.filter((card) => card.energyCost <= game.player.energy).length,
+    quickHint: game.state === STATES.PLAYER_TURN ? '카드 선택 후 턴 종료' : '턴 처리 중',
     playerBlock: game.player.block,
     playerEnergy: game.player.energy,
     enemyBlock: game.enemy?.block || 0,
@@ -336,7 +357,7 @@ export function render(ui, game, actions) {
     ui.synergyEffects.appendChild(node);
   });
 
-  ui.rewardPanel.classList.toggle('hidden', game.state !== STATES.DECK_BUILD);
+  ui.canvasDeckBuildOverlay.classList.toggle('hidden', game.state !== STATES.DECK_BUILD);
   ui.rewardCards.innerHTML = '';
   ui.removeDeckCards.innerHTML = '';
   if (game.state === STATES.DECK_BUILD) {
@@ -353,18 +374,28 @@ export function render(ui, game, actions) {
       ui.rewardCards.appendChild(node);
     });
 
-    const groupedDeck = game.deck.map((id, index) => ({ id, index, card: CARD_LIBRARY[id] }));
-    groupedDeck.forEach(({ id, index, card }) => {
-      const row = document.createElement('div');
-      row.className = 'deck-row';
-      row.innerHTML = `<span>${index + 1}. ${card.name} (${id})</span>`;
+    const removeChoices = game.removeChoices || [];
+    removeChoices.forEach((choice) => {
+      const card = CARD_LIBRARY[choice.id];
+      if (!card) return;
+      const node = document.createElement('article');
+      node.className = `card mini sigil-${card.sigil.toLowerCase()}`;
+      node.innerHTML = cardTemplate(card);
       const rm = document.createElement('button');
-      rm.textContent = '제거';
-      rm.disabled = game.removedInDeckBuild;
-      rm.addEventListener('click', () => actions.removeDeckCard(id));
-      row.appendChild(rm);
-      ui.removeDeckCards.appendChild(row);
+      rm.className = 'play-btn';
+      rm.textContent = '이 카드 제거';
+      rm.disabled = game.removedInDeckBuild || game.deck.length <= 5;
+      rm.addEventListener('click', () => actions.removeDeckCard(choice.deckIndex));
+      node.appendChild(rm);
+      ui.removeDeckCards.appendChild(node);
     });
+
+    if (!removeChoices.length) {
+      const empty = document.createElement('div');
+      empty.className = 'history-item';
+      empty.textContent = '덱이 5장 이하라 제거 후보가 생성되지 않았습니다.';
+      ui.removeDeckCards.appendChild(empty);
+    }
 
     ui.skipRewardBtn.disabled = game.rewardAccepted;
     ui.finishDeckBuildBtn.disabled = !game.rewardAccepted;
