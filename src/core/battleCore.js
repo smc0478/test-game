@@ -20,7 +20,8 @@ function createActor({ name, hp, deckIds }) {
     archetypeId: null,
     threatLevel: 1,
     extraEnergyPerTurn: 0,
-    extraDrawPerTurn: 0
+    extraDrawPerTurn: 0,
+    intentPlan: []
   };
 }
 
@@ -407,6 +408,7 @@ export function createEngine(game, hooks) {
     let intentType = game.enemy.intentType;
     let lastPlayedCardId = game.enemy.lastPlayedCardId;
     let totalDamage = 0;
+    const sequence = [];
     let simulatedFirst = false;
 
     while (true) {
@@ -426,10 +428,17 @@ export function createEngine(game, hooks) {
       const damage = selected === firstCard
         ? firstCardDamage
         : estimateIntentAttack(game.enemy, game.player, selected);
-      if (damage) totalDamage += damage;
+      const resolvedDamage = damage || 0;
+      totalDamage += resolvedDamage;
+      sequence.push({
+        id: selected.id,
+        name: selected.name,
+        type: selected.type,
+        damage: damage === null ? null : resolvedDamage
+      });
     }
 
-    return totalDamage;
+    return { totalDamage, sequence };
   };
 
   const chooseEnemyCard = ({ forExecution = false } = {}) => {
@@ -439,22 +448,27 @@ export function createEngine(game, hooks) {
         game.enemy.intent = '행동 불가';
         game.enemy.intentType = 'skill';
         game.enemy.intentDamage = 0;
+        game.enemy.intentPlan = [];
       }
       return null;
     }
 
     game.enemy.intentType = best.type === 'attack' ? 'attack' : 'skill';
     const expectedDamage = estimateIntentAttack(game.enemy, game.player, best);
-    const expectedTurnDamage = estimateEnemyTurnDamage(best, expectedDamage || 0);
-    game.enemy.intentDamage = expectedTurnDamage;
+    const plan = estimateEnemyTurnDamage(best, expectedDamage);
+    game.enemy.intentDamage = plan.totalDamage;
+    game.enemy.intentPlan = plan.sequence;
+    const planSummary = plan.sequence.length
+      ? `예상 순서: ${plan.sequence.map((step) => `${step.name}${step.damage === null ? '(피해 계산 불가)' : `(${step.damage})`}`).join(' → ')}`
+      : '예상 순서 없음';
     if (best.type === 'attack') {
       game.enemy.intent = expectedDamage === null
-        ? `${best.name} (공격 · 1회 피해 계산 불가)`
-        : `${best.name} (공격 · 1회 예상 ${expectedDamage}, 턴 합계 ${expectedTurnDamage})`;
+        ? `${best.name} (공격 · 1회 피해 계산 불가) · ${planSummary}`
+        : `${best.name} (공격 · 1회 예상 ${expectedDamage}, 턴 합계 ${plan.totalDamage}) · ${planSummary}`;
     } else {
-      game.enemy.intent = expectedTurnDamage > 0
-        ? `${best.name} (스킬 시작 · 턴 합계 예상 피해 ${expectedTurnDamage})`
-        : `${best.name} (스킬 시작)`;
+      game.enemy.intent = plan.totalDamage > 0
+        ? `${best.name} (스킬 시작 · 턴 합계 예상 피해 ${plan.totalDamage}) · ${planSummary}`
+        : `${best.name} (스킬 시작) · ${planSummary}`;
     }
     return best;
   };
