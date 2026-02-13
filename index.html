@@ -3,21 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>시너지 턴 카드 배틀 v1.3</title>
+  <title>시너지 턴 카드 배틀 v1.4</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="app">
     <header class="top-bar">
       <div>
-        <h1>시너지 턴 카드 배틀 v1.3</h1>
-        <p class="subtitle">적 난이도 스케일링 + 멀티 행동 AI + 카드 아트 중심 GUI 전장을 포함한 서버리스 러닝 모드</p>
+        <h1>시너지 턴 카드 배틀 v1.4</h1>
+        <p class="subtitle">캔버스 전장 애니메이션 + 하단 전투 조작 바를 적용한 서버리스 러닝 모드</p>
       </div>
       <div class="controls">
         <button id="start-btn">새 런 시작</button>
         <button id="resume-btn">이어하기</button>
         <button id="reset-save-btn">저장 초기화</button>
-        <button id="end-turn-btn" disabled>턴 종료</button>
         <button id="open-codex-btn" type="button">도감 페이지</button>
         <button id="open-hall-btn" type="button">명예의 전당</button>
       </div>
@@ -26,15 +25,18 @@
     <section class="status-grid">
       <article class="panel battle-stage">
         <h2>배틀 스테이지</h2>
-        <div class="arena">
-          <div class="fighter enemy" id="enemy-sprite">
-            <div class="fighter-name">적</div>
-            <div class="hp-track"><div id="enemy-hp-fill" class="hp-fill"></div></div>
-          </div>
-          <div class="vs-mark">VS</div>
-          <div class="fighter player" id="player-sprite">
-            <div class="fighter-name">플레이어</div>
-            <div class="hp-track"><div id="player-hp-fill" class="hp-fill"></div></div>
+        <div class="canvas-wrap">
+          <canvas id="battle-canvas" width="960" height="330" aria-label="배틀 전장"></canvas>
+          <div class="arena-overlay">
+            <div class="fighter enemy" id="enemy-sprite">
+              <div class="fighter-name">적</div>
+              <div class="hp-track"><div id="enemy-hp-fill" class="hp-fill"></div></div>
+            </div>
+            <div class="vs-mark">VS</div>
+            <div class="fighter player" id="player-sprite">
+              <div class="fighter-name">플레이어</div>
+              <div class="hp-track"><div id="player-hp-fill" class="hp-fill"></div></div>
+            </div>
           </div>
         </div>
       </article>
@@ -64,6 +66,14 @@
         <p>턴 소유자: <span id="turn-owner">-</span></p>
         <p>점수: <span id="score">0</span></p>
       </article>
+    </section>
+
+    <section class="panel battle-controls">
+      <h2>전투 조작</h2>
+      <p id="turn-guide" class="small">카드를 사용한 뒤 턴을 종료해 주세요.</p>
+      <div class="controls controls-bottom">
+        <button id="end-turn-btn" disabled>턴 종료</button>
+      </div>
     </section>
 
     <section class="panel">

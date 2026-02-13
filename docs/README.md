@@ -1,10 +1,12 @@
-# Synergy Turn Card Battle v1.2 문서
+# Synergy Turn Card Battle v1.4 문서
 
 ## 게임 소개
-v1.2는 분기형 10라운드 전투에 **시너지 효과 안내**, **브라우저 저장/이어하기**, **명예의 전당**을 결합한 버전입니다.
+v1.4는 분기형 10라운드 전투에 **캔버스 전장 애니메이션**, **하단 전투 조작 바**, **카드 아트 기반 손패 UI**를 결합한 버전입니다.
 
 ## 핵심 요소
 - 상태 머신: `ready -> planning -> playerTurn -> enemyTurn -> resolution -> deckBuild -> routeSelect`
+- 캔버스 기반 전장 렌더링 + 턴 전환 펄스 애니메이션
+- 하단 전투 조작 바(턴 종료/상태 안내)
 - localStorage 자동 저장 + 이어하기/저장 초기화
 - 명예의 전당(`hall.html`) 통계/기록 확인
 - 지역 6개 / 적 14종 / 카드 100장
