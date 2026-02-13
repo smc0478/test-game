@@ -16,6 +16,8 @@ function createActor({ name, hp, deckIds }) {
     comboChain: 0, lastSigil: null, turnScoreMultiplier: false,
     adrenalineTriggered: false, prismBurstTriggered: false, momentumTriggered: false,
     sigilBurstTriggered: { Flame: false, Leaf: false, Gear: false, Void: false },
+    turnCardNameCounts: {},
+    pendingNextAttackBonus: 0,
     intent: '준비', intentType: 'skill', intentDamage: null, lastPlayedCardId: null,
     archetypeId: null,
     threatLevel: 1,
@@ -133,6 +135,7 @@ export function createEngine(game, hooks) {
     actor.sigilCounts = { Flame: 0, Leaf: 0, Gear: 0, Void: 0 };
     actor.activeSynergies = { Flame: false, Leaf: false, Gear: false, Void: false };
     actor.sigilBurstTriggered = { Flame: false, Leaf: false, Gear: false, Void: false };
+    actor.turnCardNameCounts = {};
     actor.turnScoreMultiplier = false;
     actor.thorns = 0;
     actor.vulnerable = Math.max(0, actor.vulnerable - 1);
@@ -171,6 +174,7 @@ export function createEngine(game, hooks) {
     const voidBonus = (source.activeSynergies.Void || (card.sigil === 'Void' && projectedSigilCount >= 2)) ? 3 : 0;
     const vulnerableBonus = target.vulnerable > 0 ? 2 : 0;
 
+    const nextAttackBonus = source.pendingNextAttackBonus || 0;
     const comboChainBonus = source.lastSigil && source.lastSigil !== card.sigil
       ? Math.min(4, source.comboChain + 1)
       : source.comboChain;
@@ -179,13 +183,19 @@ export function createEngine(game, hooks) {
       ? (card.sigil === 'Flame' ? 12 : card.sigil === 'Void' ? 10 : 0)
       : 0;
 
-    return Math.max(0, attackBase + buffBonus + flameBonus + voidBonus + vulnerableBonus + prismBurstDamage + sigilBurstDamage);
+    return Math.max(0, attackBase + buffBonus + flameBonus + voidBonus + vulnerableBonus + prismBurstDamage + sigilBurstDamage + nextAttackBonus);
   };
 
   const effectListAttack = (effects, source, target, card) => {
     let total = 0;
     for (const effect of effects) {
       if (effect.kind === 'attack') total += effect.value;
+      if (effect.kind === 'bonusDamage') total += effect.value;
+      if (effect.kind === 'nameRepeatBonus') {
+        const used = source.turnCardNameCounts?.[card.name] || 0;
+        const repeat = Math.max(0, used - 1);
+        total += repeat * effect.value;
+      }
       if (effect.kind === 'convertBlockToDamage') total += source.block;
       if (effect.kind === 'echoAttack' && ((source.turnFamilyCounts?.[card.family] || 0) + 1) > 1) total += effect.value;
       if (effect.kind === 'ifEnemyIntent' && target.intentType === effect.intent) {
@@ -312,18 +322,38 @@ export function createEngine(game, hooks) {
       const flameBonus = source.activeSynergies.Flame ? 5 : 0;
       const voidBonus = source.activeSynergies.Void ? 3 : 0;
       const vulnerableBonus = target.vulnerable > 0 ? 2 : 0;
-      const damage = effect.value + buffBonus + flameBonus + voidBonus + vulnerableBonus;
+      const nextAttackBonus = source.pendingNextAttackBonus || 0;
+      const damage = effect.value + buffBonus + flameBonus + voidBonus + vulnerableBonus + nextAttackBonus;
       const dealt = applyDamage(target, damage);
       const formula = [
         `기본 ${effect.value}`,
         buffBonus ? `강화 +${buffBonus}` : null,
         flameBonus ? `화염시너지 +${flameBonus}` : null,
         voidBonus ? `공허시너지 +${voidBonus}` : null,
-        vulnerableBonus ? `취약 +${vulnerableBonus}` : null
+        vulnerableBonus ? `취약 +${vulnerableBonus}` : null,
+        nextAttackBonus ? `예열 +${nextAttackBonus}` : null
       ].filter(Boolean).join(', ');
       log(`${source.name} 공격 ${dealt} (계산: ${formula})`);
       if (source.activeSynergies.Void) source.hp = clamp(source.hp + 1, 0, source.maxHp);
+      source.pendingNextAttackBonus = 0;
       source.attackBuff = 0;
+    }
+    if (effect.kind === 'bonusDamage') {
+      const dealt = applyDamage(target, effect.value);
+      log(`${source.name} 추가 화염 피해 ${dealt}`);
+    }
+    if (effect.kind === 'nameRepeatBonus') {
+      const used = source.turnCardNameCounts[card.name] || 0;
+      const repeat = Math.max(0, used - 1);
+      const extra = repeat * effect.value;
+      if (extra > 0) {
+        const dealt = applyDamage(target, extra);
+        log(`${source.name} 공명 추가 피해 ${dealt} (반복 ${repeat}회)`);
+      }
+    }
+    if (effect.kind === 'nextAttackBonus') {
+      source.pendingNextAttackBonus = (source.pendingNextAttackBonus || 0) + effect.value;
+      log(`${source.name} 다음 공격 강화 +${effect.value}`);
     }
     if (effect.kind === 'block') source.block += effect.value + (source.activeSynergies.Leaf ? 7 : 0);
     if (effect.kind === 'draw') draw(source, effect.value + (source.activeSynergies.Gear ? 1 : 0));
@@ -577,6 +607,7 @@ export function createEngine(game, hooks) {
       game.player.momentumTriggered = true;
     }
     updateSynergy(game.player, card);
+    game.player.turnCardNameCounts[card.name] = (game.player.turnCardNameCounts[card.name] || 0) + 1;
     card.effect.forEach((effect) => applyEffect(game.player, game.enemy, effect, card));
     game.playedCardsHistory.unshift({ id: card.id, name: card.name });
     game.playedCardsHistory = game.playedCardsHistory.slice(0, 12);
@@ -612,6 +643,7 @@ export function createEngine(game, hooks) {
       game.enemy.hand.splice(idx, 1);
       game.enemy.discardPile.push(card.id);
       updateSynergy(game.enemy, card);
+      game.enemy.turnCardNameCounts[card.name] = (game.enemy.turnCardNameCounts[card.name] || 0) + 1;
       card.effect.forEach((effect) => applyEffect(game.enemy, game.player, effect, card));
       game.enemy.lastPlayedCardId = card.id;
       actionCount += 1;
