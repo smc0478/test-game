@@ -200,18 +200,13 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   border: 1px solid #4d63a0;
   border-radius: 12px;
   padding: 10px;
-  min-height: 112px;
+  min-height: 52px;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 .fighter-portrait {
-  width: 100%;
-  height: 66px;
-  object-fit: cover;
-  border-radius: 8px;
-  border: 1px solid rgba(148, 163, 184, 0.8);
-  background: linear-gradient(180deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
+  display: none;
 }
 .fighter-name { font-weight: 800; margin-bottom: 2px; }
 .hp-track {
