@@ -388,35 +388,72 @@ export function createEngine(game, hooks) {
 
   };
 
-  const chooseEnemyCard = () => {
-    const options = game.enemy.hand.filter((c) => c.energyCost <= game.enemy.energy);
-    if (!options.length) {
-      game.enemy.intent = '행동 불가';
-      game.enemy.intentType = 'skill';
-      game.enemy.intentDamage = 0;
+  const selectEnemyCard = ({ hand, energy, intentType, lastPlayedCardId }) => {
+    const options = hand.filter((c) => c.energyCost <= energy);
+    if (!options.length) return null;
+    const preferType = intentType === 'attack' ? 'skill' : 'attack';
+    const typedOptions = options.filter((c) => c.type === preferType);
+    const typePool = typedOptions.length ? typedOptions : options;
+    const nonRepeatPool = typePool.filter((c) => c.id !== lastPlayedCardId);
+    const finalPool = nonRepeatPool.length ? nonRepeatPool : typePool;
+    finalPool.sort((a, b) => b.baseValue - a.baseValue);
+    return finalPool[0];
+  };
+
+  const estimateEnemyTurnDamage = (firstCard, firstCardDamage) => {
+    const hand = [...game.enemy.hand];
+    let energy = game.enemy.energy;
+    let intentType = game.enemy.intentType;
+    let lastPlayedCardId = game.enemy.lastPlayedCardId;
+    let totalDamage = 0;
+    let simulatedFirst = false;
+
+    while (true) {
+      const selected = !simulatedFirst && firstCard
+        ? firstCard
+        : selectEnemyCard({ hand, energy, intentType, lastPlayedCardId });
+      simulatedFirst = true;
+      if (!selected) break;
+
+      const index = hand.findIndex((c) => c.id === selected.id);
+      if (index < 0) break;
+      energy -= selected.energyCost;
+      hand.splice(index, 1);
+      intentType = selected.type === 'attack' ? 'attack' : 'skill';
+      lastPlayedCardId = selected.id;
+
+      const damage = selected === firstCard
+        ? firstCardDamage
+        : estimateIntentAttack(game.enemy, game.player, selected);
+      if (damage) totalDamage += damage;
+    }
+
+    return totalDamage;
+  };
+
+  const chooseEnemyCard = ({ forExecution = false } = {}) => {
+    const best = selectEnemyCard(game.enemy);
+    if (!best) {
+      if (!forExecution) {
+        game.enemy.intent = '행동 불가';
+        game.enemy.intentType = 'skill';
+        game.enemy.intentDamage = 0;
+      }
       return null;
     }
 
-    const preferType = game.enemy.intentType === 'attack' ? 'skill' : 'attack';
-    const typedOptions = options.filter((c) => c.type === preferType);
-    const typePool = typedOptions.length ? typedOptions : options;
-
-    const nonRepeatPool = typePool.filter((c) => c.id !== game.enemy.lastPlayedCardId);
-    const finalPool = nonRepeatPool.length ? nonRepeatPool : typePool;
-
-    finalPool.sort((a, b) => b.baseValue - a.baseValue);
-    const best = finalPool[0];
     game.enemy.intentType = best.type === 'attack' ? 'attack' : 'skill';
     const expectedDamage = estimateIntentAttack(game.enemy, game.player, best);
-    game.enemy.intentDamage = expectedDamage;
+    const expectedTurnDamage = estimateEnemyTurnDamage(best, expectedDamage || 0);
+    game.enemy.intentDamage = expectedTurnDamage;
     if (best.type === 'attack') {
       game.enemy.intent = expectedDamage === null
-        ? `${best.name} (공격 · 피해 계산 불가)`
-        : `${best.name} (공격 · 예상 피해 ${expectedDamage})`;
+        ? `${best.name} (공격 · 1회 피해 계산 불가)`
+        : `${best.name} (공격 · 1회 예상 ${expectedDamage}, 턴 합계 ${expectedTurnDamage})`;
     } else {
-      game.enemy.intent = expectedDamage && expectedDamage > 0
-        ? `${best.name} (스킬 · 부가 피해 ${expectedDamage})`
-        : `${best.name} (스킬)`;
+      game.enemy.intent = expectedTurnDamage > 0
+        ? `${best.name} (스킬 시작 · 턴 합계 예상 피해 ${expectedTurnDamage})`
+        : `${best.name} (스킬 시작)`;
     }
     return best;
   };
@@ -544,7 +581,7 @@ export function createEngine(game, hooks) {
     const maxActions = 12;
 
     while (actionCount < maxActions) {
-      const card = chooseEnemyCard();
+      const card = chooseEnemyCard({ forExecution: true });
       if (!card) break;
 
       const idx = game.enemy.hand.findIndex((c) => c.id === card.id);
