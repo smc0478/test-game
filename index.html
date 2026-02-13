@@ -88,6 +88,27 @@
     </section>
   </main>
 
-  <script type="module" src="game.js"></script>
+  <script>
+    const isFileProtocol = window.location.protocol === 'file:';
+
+    if (isFileProtocol) {
+      const app = document.querySelector('.app');
+      app.innerHTML = `
+        <section class="panel">
+          <h2>실행 방식 안내</h2>
+          <p>보안 정책(CORS) 때문에 <code>index.html</code>을 파일로 직접 열면 게임 스크립트를 불러올 수 없습니다.</p>
+          <p>아래처럼 로컬 서버로 실행해 주세요.</p>
+          <pre>python3 -m http.server 8000
+http://localhost:8000</pre>
+        </section>
+      `;
+      console.error('[실행 오류] file:// 경로에서는 ES 모듈 로딩이 차단됩니다. 로컬 서버로 실행해 주세요.');
+    } else {
+      const script = document.createElement('script');
+      script.type = 'module';
+      script.src = './game.js';
+      document.body.appendChild(script);
+    }
+  </script>
 </body>
 </html>
