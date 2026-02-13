@@ -202,6 +202,10 @@ export function createEngine(game, hooks) {
     game.score = 0;
     game.deck = [...STARTER_DECK];
     game.player = createActor({ name: '플레이어', hp: 72, deckIds: game.deck });
+    game.enemy = null;
+    game.rewardChoices = [];
+    game.rewardAccepted = false;
+    game.removedInDeckBuild = false;
     game.discoverChoices = [];
     setupRound();
     log('런 시작');
@@ -301,6 +305,7 @@ export function createEngine(game, hooks) {
     game.player.lastTurnFamilies = new Set(game.player.turnFamiliesUsed);
     game.state = STATES.PLANNING;
     game.activeSide = 'enemy';
+    beginTurn(game.enemy, false);
     chooseEnemyCard();
     game.state = STATES.ENEMY_TURN;
     enemyTurn();

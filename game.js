@@ -8,9 +8,9 @@ const engine = createEngine(game, {
   onRender: () => render(ui, game, engine)
 });
 
-ui.startBtn.addEventListener('click', engine.startRun);
-ui.endTurnBtn.addEventListener('click', engine.endPlayerTurn);
-ui.skipRewardBtn.addEventListener('click', engine.skipReward);
-ui.finishDeckBuildBtn.addEventListener('click', engine.finishDeckBuild);
+ui.startBtn.addEventListener('click', () => engine.startRun());
+ui.endTurnBtn.addEventListener('click', () => engine.endPlayerTurn());
+ui.skipRewardBtn.addEventListener('click', () => engine.skipReward());
+ui.finishDeckBuildBtn.addEventListener('click', () => engine.finishDeckBuild());
 
 render(ui, game, engine);
