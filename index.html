@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>시너지 턴 카드 배틀 v1.2</title>
+  <title>시너지 턴 카드 배틀 v1.3</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="app">
     <header class="top-bar">
       <div>
-        <h1>시너지 턴 카드 배틀 v1.2</h1>
-        <p class="subtitle">시너지 가이드 + 저장/이어하기 + 명예의 전당을 포함한 서버리스 러닝 모드</p>
+        <h1>시너지 턴 카드 배틀 v1.3</h1>
+        <p class="subtitle">적 난이도 스케일링 + 멀티 행동 AI + 배틀 스테이지 연출을 포함한 서버리스 러닝 모드</p>
       </div>
       <div class="controls">
         <button id="start-btn">새 런 시작</button>
@@ -24,6 +24,21 @@
     </header>
 
     <section class="status-grid">
+      <article class="panel battle-stage">
+        <h2>배틀 스테이지</h2>
+        <div class="arena">
+          <div class="fighter enemy" id="enemy-sprite">
+            <div class="fighter-name">적</div>
+            <div class="hp-track"><div id="enemy-hp-fill" class="hp-fill"></div></div>
+          </div>
+          <div class="vs-mark">VS</div>
+          <div class="fighter player" id="player-sprite">
+            <div class="fighter-name">플레이어</div>
+            <div class="hp-track"><div id="player-hp-fill" class="hp-fill"></div></div>
+          </div>
+        </div>
+      </article>
+
       <article class="panel">
         <h2>플레이어</h2>
         <p>HP: <span id="player-hp">72</span> / <span id="player-max-hp">72</span></p>
@@ -37,6 +52,8 @@
         <p>방어: <span id="enemy-block">0</span></p>
         <p>에너지: <span id="enemy-energy">0</span> / 3</p>
         <p>의도: <span id="enemy-intent">-</span></p>
+        <p>위협 단계: <span id="enemy-threat">1</span></p>
+        <p>행동 수(턴): <span id="enemy-actions">1</span></p>
       </article>
 
       <article class="panel">
