@@ -3,15 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>시너지 턴 카드 배틀 v0.3</title>
+  <title>시너지 턴 카드 배틀 v0.4</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="app">
     <header class="top-bar">
-      <h1>시너지 턴 카드 배틀 v0.3</h1>
+      <div>
+        <h1>시너지 턴 카드 배틀 v0.4</h1>
+        <p class="subtitle">지역을 돌파하며 덱을 성장시키는 라운드 러닝 모드</p>
+      </div>
       <div class="controls">
-        <button id="start-btn">전투 시작</button>
+        <button id="start-btn">런 시작</button>
         <button id="end-turn-btn" disabled>턴 종료</button>
       </div>
     </header>
@@ -19,20 +22,22 @@
     <section class="status-grid">
       <article class="panel">
         <h2>플레이어</h2>
-        <p>HP: <span id="player-hp">64</span> / 64</p>
+        <p>HP: <span id="player-hp">72</span> / <span id="player-max-hp">72</span></p>
         <p>방어: <span id="player-block">0</span></p>
         <p>에너지: <span id="player-energy">0</span> / 3</p>
       </article>
 
       <article class="panel">
-        <h2>적 (훈련 오토마톤)</h2>
-        <p>HP: <span id="enemy-hp">78</span> / 78</p>
+        <h2>적 (<span id="enemy-name">-</span>)</h2>
+        <p>HP: <span id="enemy-hp">0</span> / <span id="enemy-max-hp">0</span></p>
         <p>방어: <span id="enemy-block">0</span></p>
         <p>에너지: <span id="enemy-energy">0</span> / 3</p>
       </article>
 
       <article class="panel">
-        <h2>전투 정보</h2>
+        <h2>런 정보</h2>
+        <p>지역: <span id="region-name">-</span></p>
+        <p>라운드: <span id="round-info">0 / 0</span></p>
         <p>상태: <span id="battle-state">ready</span></p>
         <p>턴 소유자: <span id="turn-owner">-</span></p>
         <p>점수: <span id="score">0</span></p>
@@ -40,14 +45,21 @@
     </section>
 
     <section class="panel">
-      <h2>현재 턴 시너지</h2>
-      <div id="synergy-info"></div>
+      <h2>시너지 / 목표</h2>
+      <div id="synergy-info" class="badge-wrap"></div>
+      <p id="goal-text" class="small">목표: 3개 지역을 돌파하고 최종 보스를 처치하세요.</p>
     </section>
 
     <section class="panel">
-      <h2>플레이어 손패</h2>
+      <h2>손패</h2>
       <div id="hand" class="hand"></div>
-      <p class="small">드로우 더미: <span id="player-draw">0</span> | 버린 더미: <span id="player-discard">0</span></p>
+      <p class="small">드로우: <span id="player-draw">0</span> | 버림: <span id="player-discard">0</span> | 덱: <span id="deck-size">0</span></p>
+    </section>
+
+    <section id="reward-panel" class="panel hidden">
+      <h2>라운드 보상 - 덱 빌딩</h2>
+      <p class="small">카드 1장을 선택해 덱에 추가하세요.</p>
+      <div id="reward-cards" class="hand"></div>
     </section>
 
     <section class="panel">
