@@ -121,7 +121,8 @@ export function createEngine(game, hooks) {
       actor.hand = [];
     }
     actor.block = 0;
-    actor.energy = MAX_ENERGY + (isPlayer ? 0 : (actor.extraEnergyPerTurn || 0));
+    const baseEnergy = MAX_ENERGY + (isPlayer ? 0 : (actor.extraEnergyPerTurn || 0));
+    actor.energy = isPlayer ? baseEnergy : getEnemyTurnEnergy(baseEnergy);
     actor.turnFamilyCounts = {};
     actor.turnFamiliesUsed = new Set();
     actor.comboChain = 0;
@@ -137,6 +138,11 @@ export function createEngine(game, hooks) {
     actor.vulnerable = Math.max(0, actor.vulnerable - 1);
     draw(actor, PLAYER_BASE_DRAW + (isPlayer ? 0 : (actor.extraDrawPerTurn || 0)));
     if (isPlayer) log('플레이어 턴 시작');
+  };
+
+  const getEnemyTurnEnergy = (baseEnergy) => {
+    if (game.round === 0) return Math.min(baseEnergy, 1);
+    return baseEnergy;
   };
 
   const getEnemyScaling = () => {
