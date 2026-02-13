@@ -50,8 +50,8 @@ const game = {
   state: STATE_READY,
   turn: 0,
   score: 0,
-  player: createActor("Player", 50, buildDeck(CARD_POOL.map((card) => card.id))),
-  enemy: createActor("Training Automaton", 55, buildDeck(CARD_POOL.map((card) => card.id))),
+  player: createActor("Player", 60, buildDeck(CARD_POOL.map((card) => card.id))),
+  enemy: createActor("Training Automaton", 70, buildDeck(CARD_POOL.map((card) => card.id))),
   activeSide: "player"
 };
 
@@ -140,8 +140,8 @@ function startBattle() {
   game.state = STATE_READY;
   game.turn = 0;
   game.score = 0;
-  game.player = createActor("Player", 50, buildDeck(CARD_POOL.map((c) => c.id)));
-  game.enemy = createActor("Training Automaton", 55, buildDeck(CARD_POOL.map((c) => c.id)));
+  game.player = createActor("Player", 60, buildDeck(CARD_POOL.map((c) => c.id)));
+  game.enemy = createActor("Training Automaton", 70, buildDeck(CARD_POOL.map((c) => c.id)));
 
   [game.player, game.enemy].forEach((actor) => {
     actor.drawPile = shuffle(actor.deck);
@@ -155,6 +155,7 @@ function startBattle() {
 }
 
 function startTurn(actor) {
+  actor.block = 0;
   actor.energy = 3;
   actor.nextAttackBonus = 0;
   actor.sigilCounts = makeSigilCounter();
@@ -166,6 +167,10 @@ function startTurn(actor) {
 
 function drawCards(actor, amount) {
   for (let i = 0; i < amount; i += 1) {
+    if (actor.hand.length >= 8) {
+      log(`${actor.name}의 손패가 가득 차서 더 이상 뽑지 못했습니다.`);
+      return;
+    }
     if (actor.drawPile.length === 0) {
       if (actor.discardPile.length === 0) return;
       actor.drawPile = shuffle(actor.discardPile);
@@ -183,9 +188,9 @@ function applyDamage(target, amount) {
   target.hp = Math.max(0, target.hp - remaining);
 }
 
-function applyScoreForCard(actor, card) {
+function applyScoreForCard(actor, card, synergyActiveForCard) {
   let gain = card.type === "attack" ? 10 : 8;
-  if (actor.activeSynergies.Void) gain = Math.floor(gain * 1.5);
+  if (card.sigil === "Void" && synergyActiveForCard) gain = Math.floor(gain * 1.5);
   if (actor.turnScoreMultiplier) gain = Math.floor(gain * 2);
   game.score += gain;
   log(`${actor.name} gained ${gain} score from ${card.name}.`);
@@ -195,17 +200,7 @@ function maybeActivateSynergy(actor, sigil) {
   actor.sigilCounts[sigil] += 1;
   if (actor.sigilCounts[sigil] >= 2 && !actor.activeSynergies[sigil]) {
     actor.activeSynergies[sigil] = true;
-    if (sigil === "Flame") {
-      actor.nextAttackBonus += 2;
-      log(`${actor.name} activated Flame synergy: next attack +2.`);
-    } else if (sigil === "Leaf") {
-      actor.block += 3;
-      log(`${actor.name} activated Leaf synergy: +3 block.`);
-    } else if (sigil === "Gear") {
-      log(`${actor.name} activated Gear synergy: +1 draw on each card resolve.`);
-    } else if (sigil === "Void") {
-      log(`${actor.name} activated Void synergy: score x1.5.`);
-    }
+    log(`${actor.name}의 ${sigil} 시너지 조건이 활성화되었습니다.`);
   }
 
   if (!actor.turnScoreMultiplier && SIGILS.every((name) => actor.sigilCounts[name] >= 1)) {
@@ -216,6 +211,8 @@ function maybeActivateSynergy(actor, sigil) {
       log(`${actor.name} achieved full-spectrum turn: +20 bonus, turn score x2.`, "good");
     }
   }
+
+  return actor.sigilCounts[sigil] >= 2;
 }
 
 function resolveCard(actor, target, handIndex) {
@@ -226,13 +223,13 @@ function resolveCard(actor, target, handIndex) {
   actor.hand.splice(handIndex, 1);
   actor.discardPile.push(card);
 
-  maybeActivateSynergy(actor, card.sigil);
+  const synergyActiveForCard = maybeActivateSynergy(actor, card.sigil);
 
-  const effect = computeCardEffect(card, actor, target);
+  const effect = computeCardEffect(card, actor, target, synergyActiveForCard);
   applyEffect(effect, actor, target, card);
-  applyScoreForCard(actor, card);
+  applyScoreForCard(actor, card, synergyActiveForCard);
 
-  if (actor.activeSynergies.Gear) {
+  if (card.sigil === "Gear" && synergyActiveForCard) {
     drawCards(actor, 1);
     log(`${actor.name} drew +1 from Gear synergy.`);
   }
@@ -240,7 +237,7 @@ function resolveCard(actor, target, handIndex) {
   return true;
 }
 
-function computeCardEffect(card, actor, target) {
+function computeCardEffect(card, actor, target, synergyActiveForCard) {
   if (card.id === "C009") {
     return { kind: "buffAttack", value: card.baseValue };
   }
@@ -256,9 +253,16 @@ function computeCardEffect(card, actor, target) {
       damage += actor.nextAttackBonus;
       actor.nextAttackBonus = 0;
     }
+    if (card.sigil === "Flame" && synergyActiveForCard) {
+      damage += 3;
+    }
     return { kind: "damage", value: damage };
   }
-  return { kind: "block", value: card.baseValue };
+  let blockValue = card.baseValue;
+  if (card.sigil === "Leaf" && synergyActiveForCard) {
+    blockValue += 3;
+  }
+  return { kind: "block", value: blockValue };
 }
 
 function applyEffect(effect, actor, target, card) {
