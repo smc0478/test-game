@@ -1,7 +1,7 @@
 let hoverHooks = { onHover: null, onHoverOut: null };
 
 const safeRate = (value, max) => (max ? Math.max(0, Math.min(1, value / max)) : 0);
-const BATTLE_STAGE_HEIGHT = 440;
+const BATTLE_STAGE_HEIGHT = 620;
 
 const toClientPointerEvent = (scene, pointer) => {
   if (!pointer) return undefined;
@@ -121,7 +121,7 @@ export function createPhaserBattle({ parent, onHover, onHoverOut }) {
   const game = new PhaserLib.Game({
     type: PhaserLib.AUTO,
     parent,
-    width: 960,
+    width: 1280,
     height: BATTLE_STAGE_HEIGHT,
     backgroundColor: '#060b1f',
     scene: [BootScene, BattleScene],
