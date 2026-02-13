@@ -15,3 +15,10 @@
 - 진행 중 상태는 액션 단위로 localStorage에 저장.
 - `gameOver`/`runComplete` 시 런 스냅샷은 삭제하고 결과를 명예의 전당에 기록.
 - 명예의 전당은 최근 30회 결과를 유지.
+
+
+## Enemy Scaling & Multi-Action Flow (v1.3)
+- 라운드 인덱스를 기반으로 `threatLevel`을 계산한다.
+- `beginTurn(enemy)`에서 에너지/드로우 보너스를 반영한다.
+- `enemyTurn()`은 최대 행동 수(기본 1 + 보너스)를 루프로 실행하며, 매 행동마다 `chooseEnemyCard()`를 재호출한다.
+- 루프 중 사망 판정이 발생하면 즉시 `resolution`으로 전이한다.

@@ -58,6 +58,12 @@ export function createUiBindings() {
     enemyBlock: document.querySelector('#enemy-block'),
     enemyEnergy: document.querySelector('#enemy-energy'),
     enemyIntent: document.querySelector('#enemy-intent'),
+    enemyThreat: document.querySelector('#enemy-threat'),
+    enemyActions: document.querySelector('#enemy-actions'),
+    enemyHpFill: document.querySelector('#enemy-hp-fill'),
+    playerHpFill: document.querySelector('#player-hp-fill'),
+    enemySprite: document.querySelector('#enemy-sprite'),
+    playerSprite: document.querySelector('#player-sprite'),
     regionName: document.querySelector('#region-name'),
     roundInfo: document.querySelector('#round-info'),
     battleState: document.querySelector('#battle-state'),
@@ -97,6 +103,8 @@ export function render(ui, game, actions) {
   ui.enemyBlock.textContent = game.enemy?.block || 0;
   ui.enemyEnergy.textContent = game.enemy?.energy || 0;
   ui.enemyIntent.textContent = game.enemy?.intent || '-';
+  ui.enemyThreat.textContent = game.enemy?.threatLevel || 1;
+  ui.enemyActions.textContent = 1 + (game.enemy?.extraActionBudget || 0);
   ui.regionName.textContent = game.region;
   ui.roundInfo.textContent = `${Math.min(game.round + 1, game.totalRounds)} / ${game.totalRounds}`;
   ui.battleState.textContent = game.state;
@@ -108,6 +116,13 @@ export function render(ui, game, actions) {
   ui.goalText.textContent = game.state === STATES.RUN_COMPLETE ? '목표 달성! 모든 지역 정복 완료' : `목표: ${game.totalRounds}라운드 클리어`;
   ui.endTurnBtn.disabled = game.state !== STATES.PLAYER_TURN;
   ui.resumeBtn.disabled = !actions.hasSavedRun();
+
+  const playerHpRate = game.player.maxHp ? (game.player.hp / game.player.maxHp) * 100 : 0;
+  const enemyHpRate = game.enemy?.maxHp ? ((game.enemy.hp || 0) / game.enemy.maxHp) * 100 : 0;
+  ui.playerHpFill.style.width = `${Math.max(0, Math.min(100, playerHpRate))}%`;
+  ui.enemyHpFill.style.width = `${Math.max(0, Math.min(100, enemyHpRate))}%`;
+  ui.playerSprite.classList.toggle('attacking', game.activeSide === 'player' && game.state === STATES.PLAYER_TURN);
+  ui.enemySprite.classList.toggle('attacking', game.activeSide === 'enemy' && game.state === STATES.ENEMY_TURN);
 
   ui.hand.innerHTML = '';
   game.player.hand.forEach((card, idx) => {
