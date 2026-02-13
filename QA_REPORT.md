@@ -24,3 +24,4 @@
 |---|---|---|---|---|
 | BUG-ROUND1-ENERGY | `tests/bugs/round1-enemy-energy-cap.test.mjs` | `node tests/bugs/round1-enemy-energy-cap.test.mjs` | PASS | 1라운드 적 에너지 상한 회귀 검증 |
 | BUG-VAMP-OVERKILL | `tests/bugs/vamp-lifesteal-overkill.test.mjs` | `node tests/bugs/vamp-lifesteal-overkill.test.mjs` | PASS | 흡혈 회복량이 실제 피해(오버킬 제외) 기준인지 검증 |
+| BUG-VAMP-BLOCKED-DAMAGE | `tests/bugs/vamp-lifesteal-blocked-damage.test.mjs` | `node tests/bugs/vamp-lifesteal-blocked-damage.test.mjs` | PASS | 수정 전 FAIL(회복 32), 수정 후 PASS(실피해 0일 때 회복 0) 확인 |

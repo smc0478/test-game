@@ -80,9 +80,9 @@ const BASE_CARD_LIBRARY = {
   C031: c('C031', '영점 추출', 'nebula-draw', 'skill', 2, 2, 'Gear', [{ kind: 'drawThenDiscount', value: 2, discount: 1 }], '카드 2장을 뽑고, 이렇게 뽑은 카드의 코스트를 이번 턴 동안 1 감소시킨다.'),
   C032: c('C032', '혈인 각인', 'void-vamp', 'skill', 1, 0, 'Void', [{ kind: 'grantNextAttackLifestealFromDamage' }], '다음 공격이 가한 실제 피해만큼 즉시 흡혈한다.'),
   C033: c('C033', '공허 수혈', 'void-vamp', 'skill', 1, 4, 'Void', [{ kind: 'increaseHealPower', value: 2 }, { kind: 'heal', value: 4 }], '이번 턴 회복량을 2 증가시키고 체력을 4 회복한다.'),
-  C034: c('C034', '피의 계약', 'void-vamp', 'attack', 0, 13, 'Void', [{ kind: 'payHpCost', value: 4 }, { kind: 'attack', value: 13 }, { kind: 'drain', value: 4 }], '에너지 대신 체력 4를 지불하고 피해 13을 준 뒤 체력 4를 흡혈한다.'),
+  C034: c('C034', '피의 계약', 'void-vamp', 'attack', 0, 13, 'Void', [{ kind: 'payHpCost', value: 4 }, { kind: 'grantNextAttackLifestealFromDamage' }, { kind: 'attack', value: 13 }], '에너지 대신 체력 4를 지불하고 피해 13을 준 뒤, 실제 피해량만큼 흡혈한다.'),
   C035: c('C035', '결손 포식', 'void-vamp', 'attack', 1, 2, 'Void', [{ kind: 'attackPerMissingHp', value: 2, cap: 24 }], '잃은 체력 1당 피해 2(최대 24)를 준다.'),
-  C036: c('C036', '심연 송곳니', 'void-vamp', 'skill', 1, 2, 'Void', [{ kind: 'grantLifestealOnAttack', value: 2 }, { kind: 'draw', value: 1 }], '이번 턴 내 공격마다 흡혈 2를 얻고 카드를 1장 뽑는다.')
+  C036: c('C036', '심연 송곳니', 'void-vamp', 'skill', 1, 0, 'Void', [{ kind: 'grantLifestealOnAttackFromDamage' }, { kind: 'draw', value: 1 }], '이번 턴 내 공격마다 실제 피해량만큼 흡혈하고 카드를 1장 뽑는다.')
 };
 
 const buildConceptCards = () => ({});

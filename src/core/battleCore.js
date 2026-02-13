@@ -19,6 +19,7 @@ function createActor({ name, hp, deckIds }) {
     turnCardNameCounts: {},
     pendingNextAttackBonus: 0,
     nextAttackLifestealFromDamage: false,
+    attackLifestealFromDamage: false,
     lifestealOnAttack: 0,
     healPower: 0,
     blockRetainTurns: 0,
@@ -158,6 +159,7 @@ export function createEngine(game, hooks) {
     actor.healPower = 0;
     actor.lifestealOnAttack = 0;
     actor.nextAttackLifestealFromDamage = false;
+    actor.attackLifestealFromDamage = false;
     actor.thorns = 0;
     actor.vulnerable = Math.max(0, actor.vulnerable - 1);
     draw(actor, PLAYER_BASE_DRAW + (isPlayer ? 0 : (actor.extraDrawPerTurn || 0)));
@@ -370,9 +372,9 @@ export function createEngine(game, hooks) {
       ].filter(Boolean).join(', ');
       log(`${source.name} 공격 ${dealt} (계산: ${formula})`);
       if (source.activeSynergies.Void) restoreHp(source, 1);
-      if (source.lifestealOnAttack > 0) {
-        const healed = restoreHp(source, source.lifestealOnAttack);
-        if (healed > 0) log(`${source.name} 흡혈 고정 회복 ${healed}`);
+      if (source.attackLifestealFromDamage && dealt > 0) {
+        const healed = restoreHp(source, dealt);
+        if (healed > 0) log(`${source.name} 공격 흡혈 ${healed}`);
       }
       if (source.nextAttackLifestealFromDamage) {
         const healed = restoreHp(source, dealt);
@@ -425,8 +427,13 @@ export function createEngine(game, hooks) {
       log(`${source.name} 다음 공격 피해량 흡혈 준비`);
     }
     if (effect.kind === 'grantLifestealOnAttack') {
-      source.lifestealOnAttack += effect.value;
-      log(`${source.name} 공격 시 고정 흡혈 +${effect.value}`);
+      source.attackLifestealFromDamage = true;
+      source.lifestealOnAttack += effect.value || 0;
+      log(`${source.name} 이번 턴 공격이 준 실제 피해만큼 흡혈 준비`);
+    }
+    if (effect.kind === 'grantLifestealOnAttackFromDamage') {
+      source.attackLifestealFromDamage = true;
+      log(`${source.name} 이번 턴 공격이 준 실제 피해만큼 흡혈 준비`);
     }
     if (effect.kind === 'payHpCost') {
       source.hp = clamp(source.hp - effect.value, 0, source.maxHp);
