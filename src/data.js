@@ -166,6 +166,49 @@ const RAW_ENEMY_ARCHETYPES = {
   chronoEcho: { id: 'chronoEcho', name: '시공 메아리', hp: 98, deck: ['C043', 'C075', 'C107', 'C139', 'C107', 'C162'], image: enemyArt('시공 메아리', '⏱️', '#67e8f9', '#1e3a8a') }
 };
 
+const BASIC_CORE_16_DECK = Array.from({ length: 16 }, (_, i) => `C${String(i + 1).padStart(3, '0')}`);
+
+const BASIC_SIGIL_DECKS = {
+  Flame: ['C001', 'C002', 'C003', 'C004'],
+  Leaf: ['C005', 'C006', 'C007', 'C008'],
+  Gear: ['C009', 'C010', 'C011', 'C012'],
+  Void: ['C013', 'C014', 'C015', 'C016']
+};
+
+const CONCEPT_SIGIL_DECKS = {
+  Flame: ['C017', 'C018', 'C019', 'C020', 'C021'],
+  Leaf: ['C022', 'C023', 'C024', 'C025', 'C026'],
+  Gear: ['C027', 'C028', 'C029', 'C030', 'C031'],
+  Void: ['C032', 'C033', 'C034', 'C035', 'C036']
+};
+
+const repeatDeck = (pool, copies = 2) => Array.from({ length: copies }, () => pool).flat();
+
+const seededRandomDeck = (seed, size = 8) => {
+  const cardIds = Object.keys(BASE_CARD_LIBRARY);
+  let value = seed.split('').reduce((acc, ch) => ((acc * 31) + ch.charCodeAt(0)) >>> 0, 7) || 7;
+  const deck = [];
+  for (let i = 0; i < size; i += 1) {
+    value = (value * 1664525 + 1013904223) >>> 0;
+    deck.push(cardIds[value % cardIds.length]);
+  }
+  return deck;
+};
+
+const TEMP_ENEMY_DECK_PLAN = {
+  emberFox: BASIC_CORE_16_DECK,
+  ironShell: repeatDeck(BASIC_SIGIL_DECKS.Flame),
+  sandBandit: repeatDeck(BASIC_SIGIL_DECKS.Leaf),
+  thornDruid: repeatDeck(BASIC_SIGIL_DECKS.Gear),
+  mistArcher: repeatDeck(BASIC_SIGIL_DECKS.Void),
+  vineGiant: [...CONCEPT_SIGIL_DECKS.Leaf, ...BASIC_SIGIL_DECKS.Leaf.slice(0, 3)],
+  gearSentinel: [...CONCEPT_SIGIL_DECKS.Gear, ...BASIC_SIGIL_DECKS.Gear.slice(0, 3)],
+  steamKnight: [...CONCEPT_SIGIL_DECKS.Flame, ...BASIC_SIGIL_DECKS.Flame.slice(0, 3)],
+  arcSniper: [...CONCEPT_SIGIL_DECKS.Void, ...BASIC_SIGIL_DECKS.Void.slice(0, 3)]
+};
+
+const resolveEnemyDeck = (enemyId) => TEMP_ENEMY_DECK_PLAN[enemyId] || seededRandomDeck(enemyId);
+
 
 const normalizeCardId = (cardId) => {
   if (CARD_LIBRARY[cardId]) return cardId;
@@ -175,7 +218,7 @@ const normalizeCardId = (cardId) => {
 export const ENEMY_ARCHETYPES = Object.fromEntries(
   Object.entries(RAW_ENEMY_ARCHETYPES).map(([key, enemy]) => [
     key,
-    { ...enemy, deck: enemy.deck.map(normalizeCardId).filter(Boolean) }
+    { ...enemy, deck: resolveEnemyDeck(enemy.id).map(normalizeCardId).filter(Boolean) }
   ])
 );
 
