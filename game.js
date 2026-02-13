@@ -449,7 +449,10 @@ function resolveBattleState() {
     game.prevPlayerFamilies = [...game.player.lastTurnFamilies];
     game.round += 1;
     transitionTo(STATE_DECK_BUILD);
+    return;
   }
+
+  transitionTo(STATE_PLAYER_TURN);
 }
 
 function describeEffect(effect) {
