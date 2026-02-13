@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Synergy Turn Card Battle v0.1</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="top-bar">
+      <h1>Synergy Turn Card Battle v0.1</h1>
+      <div class="controls">
+        <button id="start-btn">Start Battle</button>
+        <button id="end-turn-btn" disabled>End Turn</button>
+      </div>
+    </header>
+
+    <section class="status-grid">
+      <article class="panel">
+        <h2>Player</h2>
+        <p>HP: <span id="player-hp">50</span> / 50</p>
+        <p>Block: <span id="player-block">0</span></p>
+        <p>Energy: <span id="player-energy">0</span> / 3</p>
+      </article>
+
+      <article class="panel">
+        <h2>Enemy (Training Automaton)</h2>
+        <p>HP: <span id="enemy-hp">55</span> / 55</p>
+        <p>Block: <span id="enemy-block">0</span></p>
+        <p>Energy: <span id="enemy-energy">0</span> / 3</p>
+      </article>
+
+      <article class="panel">
+        <h2>Battle</h2>
+        <p>State: <span id="battle-state">ready</span></p>
+        <p>Turn: <span id="turn-owner">-</span></p>
+        <p>Score: <span id="score">0</span></p>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>Current Turn Synergy</h2>
+      <div id="synergy-info"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Player Hand</h2>
+      <div id="hand" class="hand"></div>
+      <p class="small">Draw pile: <span id="player-draw">0</span> | Discard pile: <span id="player-discard">0</span></p>
+    </section>
+
+    <section class="panel">
+      <h2>Log</h2>
+      <div id="log" class="log"></div>
+    </section>
+
+    <section class="panel">
+      <h2>How to Run</h2>
+      <ol>
+        <li>Open this folder in a terminal.</li>
+        <li>Run: <code>python3 -m http.server 8000</code></li>
+        <li>Open: <code>http://localhost:8000</code></li>
+      </ol>
+    </section>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>
