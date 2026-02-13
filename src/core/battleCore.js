@@ -248,9 +248,10 @@ export function createEngine(game, hooks) {
       actor.adrenalineTriggered = true;
       log(`${actor.name} 아드레날린 발동`);
     }
-    if (new Set(SIGILS.filter((s) => actor.sigilCounts[s] > 0)).size === 4) {
+    if (new Set(SIGILS.filter((s) => actor.sigilCounts[s] > 0)).size === 4 && !actor.turnScoreMultiplier) {
       actor.turnScoreMultiplier = true;
       game.score += 24;
+      log(`${actor.name} 프리즘 정렬 보너스 +24`);
     }
     if (actor.comboChain >= 3 && !actor.prismBurstTriggered) {
       actor.prismBurstTriggered = true;
