@@ -1,67 +1,58 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Synergy Turn Card Battle v0.1</title>
+  <title>시너지 턴 카드 배틀 v0.2</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="app">
     <header class="top-bar">
-      <h1>Synergy Turn Card Battle v0.1</h1>
+      <h1>시너지 턴 카드 배틀 v0.2</h1>
       <div class="controls">
-        <button id="start-btn">Start Battle</button>
-        <button id="end-turn-btn" disabled>End Turn</button>
+        <button id="start-btn">전투 시작</button>
+        <button id="end-turn-btn" disabled>턴 종료</button>
       </div>
     </header>
 
     <section class="status-grid">
       <article class="panel">
-        <h2>Player</h2>
-        <p>HP: <span id="player-hp">50</span> / 50</p>
-        <p>Block: <span id="player-block">0</span></p>
-        <p>Energy: <span id="player-energy">0</span> / 3</p>
+        <h2>플레이어</h2>
+        <p>HP: <span id="player-hp">60</span> / 60</p>
+        <p>방어: <span id="player-block">0</span></p>
+        <p>에너지: <span id="player-energy">0</span> / 3</p>
       </article>
 
       <article class="panel">
-        <h2>Enemy (Training Automaton)</h2>
-        <p>HP: <span id="enemy-hp">55</span> / 55</p>
-        <p>Block: <span id="enemy-block">0</span></p>
-        <p>Energy: <span id="enemy-energy">0</span> / 3</p>
+        <h2>적 (훈련 오토마톤)</h2>
+        <p>HP: <span id="enemy-hp">70</span> / 70</p>
+        <p>방어: <span id="enemy-block">0</span></p>
+        <p>에너지: <span id="enemy-energy">0</span> / 3</p>
       </article>
 
       <article class="panel">
-        <h2>Battle</h2>
-        <p>State: <span id="battle-state">ready</span></p>
-        <p>Turn: <span id="turn-owner">-</span></p>
-        <p>Score: <span id="score">0</span></p>
+        <h2>전투 정보</h2>
+        <p>상태: <span id="battle-state">ready</span></p>
+        <p>턴 소유자: <span id="turn-owner">-</span></p>
+        <p>점수: <span id="score">0</span></p>
       </article>
     </section>
 
     <section class="panel">
-      <h2>Current Turn Synergy</h2>
+      <h2>현재 턴 시너지</h2>
       <div id="synergy-info"></div>
     </section>
 
     <section class="panel">
-      <h2>Player Hand</h2>
+      <h2>플레이어 손패</h2>
       <div id="hand" class="hand"></div>
-      <p class="small">Draw pile: <span id="player-draw">0</span> | Discard pile: <span id="player-discard">0</span></p>
+      <p class="small">드로우 더미: <span id="player-draw">0</span> | 버린 더미: <span id="player-discard">0</span></p>
     </section>
 
     <section class="panel">
-      <h2>Log</h2>
+      <h2>전투 로그</h2>
       <div id="log" class="log"></div>
-    </section>
-
-    <section class="panel">
-      <h2>How to Run</h2>
-      <ol>
-        <li>Open this folder in a terminal.</li>
-        <li>Run: <code>python3 -m http.server 8000</code></li>
-        <li>Open: <code>http://localhost:8000</code></li>
-      </ol>
     </section>
   </main>
 
