@@ -174,17 +174,8 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .battle-stage { grid-column: 1 / -1; }
 .battlefield-layout {
   display: grid;
-  grid-template-columns: minmax(210px, 250px) minmax(0, 1fr) minmax(210px, 250px);
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
-  align-items: stretch;
-}
-.side-stat-panel {
-  margin-top: 0;
-  min-height: 330px;
-}
-.side-stat-panel h3 {
-  margin: 0 0 10px;
-  font-size: 1.08rem;
 }
 .canvas-wrap {
   position: relative;
@@ -224,12 +215,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 .fighter-name { font-weight: 800; margin-bottom: 2px; }
 .hp-track {
-  width: 100%;
-  height: 12px;
-  border-radius: 999px;
-  overflow: hidden;
-  background: #1f2937;
-  border: 1px solid #6179ba;
+  display: none;
 }
 .hp-fill {
   height: 100%;
@@ -281,11 +267,57 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   transform: translateY(-12px);
   border-color: #7dd3fc;
 }
-.battle-controls {
+
+.hover-hit-area {
+  position: absolute;
+  top: 50%;
+  width: clamp(140px, 18vw, 220px);
+  height: clamp(140px, 26vh, 220px);
+  transform: translateY(-50%);
+  z-index: 3;
+  background: transparent;
+}
+.hover-hit-player {
+  left: max(8px, calc(16.66% - 36px));
+}
+.hover-hit-enemy {
+  right: max(8px, calc(16.66% - 36px));
+}
+.hover-info-panel {
+  position: fixed;
+  z-index: 50;
+  width: min(300px, calc(100vw - 20px));
+  margin: 0;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 140ms ease, transform 140ms ease;
+  pointer-events: none;
+  display: none;
+}
+.hover-info-panel.visible {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+.hover-info-panel h3 {
+  margin: 0 0 8px;
+}
+.hover-info-panel p {
+  margin: 0 0 6px;
+}
+.battle-controls-inline {
+  margin-top: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  border: 1px solid #35508e;
+  border-radius: 12px;
+  padding: 8px 10px;
+  background: rgba(8, 16, 40, 0.82);
+}
+.battle-controls-inline .small {
+  margin: 0;
 }
 .controls-bottom { margin-left: auto; }
 
@@ -334,24 +366,12 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 
 @media (max-width: 860px) {
   .top-bar,
-  .battle-controls {
+  .battle-controls-inline {
     flex-direction: column;
     align-items: stretch;
   }
   .battlefield-layout {
     grid-template-columns: 1fr;
-  }
-  .side-stat-panel {
-    min-height: 0;
-  }
-  .player-side-panel {
-    order: 2;
-  }
-  .canvas-wrap {
-    order: 1;
-  }
-  .enemy-side-panel {
-    order: 3;
   }
   #battle-canvas { height: 260px; }
   .arena-overlay {
@@ -360,6 +380,20 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
     grid-template-rows: auto auto auto;
     padding: 10px;
     align-items: stretch;
+  }
+  .hover-hit-area {
+    width: calc(100% - 16px);
+    height: 36%;
+    left: 8px;
+    right: 8px;
+    transform: none;
+  }
+  .hover-hit-player {
+    top: 8px;
+  }
+  .hover-hit-enemy {
+    top: auto;
+    bottom: 8px;
   }
   .fighter {
     min-height: 104px;
@@ -373,6 +407,13 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   }
   .canvas-build-grid {
     grid-template-columns: 1fr;
+  }
+  .battle-controls-inline .controls-bottom {
+    margin-left: 0;
+    width: 100%;
+  }
+  .battle-controls-inline #end-turn-btn {
+    width: 100%;
   }
   .battle-hand-head {
     flex-direction: column;

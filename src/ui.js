@@ -238,6 +238,80 @@ class BattleCanvas {
   }
 }
 
+
+const statusSummary = (actor) => {
+  if (!actor) return '없음';
+  const bag = [];
+  if (actor.attackBuff > 0) bag.push(`공격 강화 ${actor.attackBuff}`);
+  if (actor.thorns > 0) bag.push(`가시 ${actor.thorns}`);
+  if (actor.vulnerable > 0) bag.push(`취약 ${actor.vulnerable}`);
+  return bag.length ? bag.join(', ') : '없음';
+};
+
+const bindHoverInfoPanel = (triggerEl, panelEl, preferredSide) => {
+  if (!triggerEl || !panelEl) return;
+  let open = false;
+
+  const placePanel = (event) => {
+    const offset = 14;
+    const panelWidth = panelEl.offsetWidth || 280;
+    const panelHeight = panelEl.offsetHeight || 200;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const rect = triggerEl.getBoundingClientRect();
+
+    const baseX = preferredSide === 'left'
+      ? rect.left - panelWidth - offset
+      : rect.right + offset;
+    const fallbackX = preferredSide === 'left'
+      ? rect.right + offset
+      : rect.left - panelWidth - offset;
+
+    let nextX = baseX;
+    if (nextX < 8 || nextX + panelWidth > viewportWidth - 8) {
+      nextX = fallbackX;
+    }
+
+    if (nextX < 8) nextX = 8;
+    if (nextX + panelWidth > viewportWidth - 8) nextX = viewportWidth - panelWidth - 8;
+
+    const pointerY = event?.clientY ?? (rect.top + rect.height * 0.5);
+    let nextY = pointerY - panelHeight * 0.5;
+    if (nextY < 8) nextY = 8;
+    if (nextY + panelHeight > viewportHeight - 8) nextY = viewportHeight - panelHeight - 8;
+
+    panelEl.style.left = `${Math.round(nextX)}px`;
+    panelEl.style.top = `${Math.round(nextY)}px`;
+  };
+
+  const show = (event) => {
+    if (!open) {
+      panelEl.classList.add('visible');
+      panelEl.setAttribute('aria-hidden', 'false');
+      open = true;
+    }
+    placePanel(event);
+  };
+
+  const hide = () => {
+    open = false;
+    panelEl.classList.remove('visible');
+    panelEl.setAttribute('aria-hidden', 'true');
+  };
+
+  triggerEl.addEventListener('mouseenter', show);
+  triggerEl.addEventListener('mousemove', show);
+  triggerEl.addEventListener('mouseleave', hide);
+  window.addEventListener('resize', () => {
+    if (open) placePanel();
+  });
+};
+
+export function initBattleUI(ui) {
+  bindHoverInfoPanel(ui.playerHitArea, ui.playerHoverInfo, 'right');
+  bindHoverInfoPanel(ui.enemyHitArea, ui.enemyHoverInfo, 'left');
+}
+
 export function createUiBindings() {
   return {
     startBtn: document.querySelector('#start-btn'),
@@ -258,12 +332,18 @@ export function createUiBindings() {
     enemyIntent: document.querySelector('#enemy-intent'),
     enemyThreat: document.querySelector('#enemy-threat'),
     enemyActions: document.querySelector('#enemy-actions'),
+    playerStatus: document.querySelector('#player-status'),
+    enemyStatus: document.querySelector('#enemy-status'),
     enemyHpFill: document.querySelector('#enemy-hp-fill'),
     playerHpFill: document.querySelector('#player-hp-fill'),
     enemySprite: document.querySelector('#enemy-sprite'),
     playerSprite: document.querySelector('#player-sprite'),
     enemyPortrait: document.querySelector('#enemy-portrait'),
     playerPortrait: document.querySelector('#player-portrait'),
+    playerHitArea: document.querySelector('#player-hit-area'),
+    enemyHitArea: document.querySelector('#enemy-hit-area'),
+    playerHoverInfo: document.querySelector('#player-hover-info'),
+    enemyHoverInfo: document.querySelector('#enemy-hover-info'),
     regionName: document.querySelector('#region-name'),
     roundInfo: document.querySelector('#round-info'),
     battleState: document.querySelector('#battle-state'),
@@ -306,6 +386,8 @@ export function render(ui, game, actions) {
   ui.enemyIntent.textContent = game.enemy?.intent || '-';
   ui.enemyThreat.textContent = game.enemy?.threatLevel || 1;
   ui.enemyActions.textContent = '에너지 소진형';
+  ui.playerStatus.textContent = statusSummary(game.player);
+  ui.enemyStatus.textContent = statusSummary(game.enemy);
   ui.regionName.textContent = game.region;
   ui.roundInfo.textContent = `${Math.min(game.round + 1, game.totalRounds)} / ${game.totalRounds}`;
   ui.battleState.textContent = game.state;
