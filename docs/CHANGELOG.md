@@ -35,6 +35,13 @@
 
 # Project Changelog
 
+## v1.7.2
+### Added
+- 버그 재발 방지를 위해 `tests/bugs/round1-enemy-energy-cap.test.mjs` 회귀 테스트 스크립트를 추가.
+
+### Changed
+- AGENTS/PLAYBOOK/개발 가이드/QA 보고서에 버그 수정 시 재현 테스트 작성 및 실행 절차를 명문화.
+
 ## v1.4.1
 ### Changed
 - 적 턴 카드 사용 로직을 행동 슬롯 제한 방식에서 에너지 소진 우선 방식으로 변경.
