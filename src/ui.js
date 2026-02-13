@@ -35,42 +35,8 @@ const effectText = (effect) => {
   return map[effect.kind] || effect.kind;
 };
 
-const SIGIL_LABELS = {
-  Flame: '화염',
-  Leaf: '리프',
-  Gear: '기어',
-  Void: '공허',
-  Burst: '버스트'
-};
-
-const sigilIcon = (sigil) => {
-  const icons = {
-    Flame: '🔥',
-    Leaf: '🍃',
-    Gear: '⚙️',
-    Void: '🌌',
-    Burst: '💥'
-  };
-  return icons[sigil] || '✨';
-};
-
-
-const PLAYER_PORTRAIT = (() => {
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 220'>
-    <defs>
-      <linearGradient id='playerBg' x1='0' y1='0' x2='1' y2='1'>
-        <stop offset='0' stop-color='#60a5fa'/>
-        <stop offset='1' stop-color='#1d4ed8'/>
-      </linearGradient>
-    </defs>
-    <rect width='220' height='220' rx='28' fill='url(#playerBg)'/>
-    <circle cx='110' cy='90' r='54' fill='rgba(15,23,42,0.45)' stroke='rgba(255,255,255,0.55)' stroke-width='3'/>
-    <text x='110' y='108' text-anchor='middle' font-size='56'>🧙</text>
-    <rect x='18' y='154' width='184' height='48' rx='12' fill='rgba(15,23,42,0.62)'/>
-    <text x='110' y='184' text-anchor='middle' fill='white' font-size='18' font-weight='700' font-family='sans-serif'>플레이어</text>
-  </svg>`;
-  return `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`;
-})();
+const SIGIL_LABELS = { Flame: '화염', Leaf: '리프', Gear: '기어', Void: '공허', Burst: '버스트' };
+const sigilIcon = (sigil) => ({ Flame: '🔥', Leaf: '🍃', Gear: '⚙️', Void: '🌌', Burst: '💥' }[sigil] || '✨');
 
 const cardTemplate = (card) => `<div class='card-top'>
   <span class='sigil-chip sigil-${card.sigil.toLowerCase()}'>${sigilIcon(card.sigil)} ${SIGIL_LABELS[card.sigil] || card.sigil}</span>
@@ -82,163 +48,6 @@ const cardTemplate = (card) => `<div class='card-top'>
 <p><strong>효과</strong> ${card.effect.map(effectText).join(', ')}</p>
 <p class='small'>${card.description || '설명 없음'}</p>`;
 
-class BattleCanvas {
-  constructor(canvas) {
-    this.canvas = canvas;
-    this.ctx = canvas?.getContext('2d');
-    this.time = 0;
-    this.lastTs = 0;
-    this.playerPulse = 0;
-    this.enemyPulse = 0;
-    if (this.ctx) {
-      requestAnimationFrame((ts) => this.tick(ts));
-    }
-  }
-
-  tick(ts) {
-    const delta = this.lastTs ? (ts - this.lastTs) / 1000 : 0;
-    this.lastTs = ts;
-    this.time += delta;
-    this.playerPulse = Math.max(0, this.playerPulse - delta * 2.2);
-    this.enemyPulse = Math.max(0, this.enemyPulse - delta * 2.2);
-    if (this.snapshot) {
-      this.draw();
-    }
-    requestAnimationFrame((next) => this.tick(next));
-  }
-
-  update(snapshot) {
-    if (!this.ctx) return;
-    if (this.snapshot && snapshot.activeSide !== this.snapshot.activeSide) {
-      if (snapshot.activeSide === 'player') this.playerPulse = 1;
-      if (snapshot.activeSide === 'enemy') this.enemyPulse = 1;
-    }
-    this.snapshot = snapshot;
-    this.resize();
-  }
-
-  resize() {
-    const rect = this.canvas.getBoundingClientRect();
-    const width = Math.max(320, Math.floor(rect.width));
-    const height = Math.max(220, Math.floor(rect.height));
-    if (this.canvas.width !== width || this.canvas.height !== height) {
-      this.canvas.width = width;
-      this.canvas.height = height;
-    }
-  }
-
-  drawFighter({ x, y, radius, color, hpRate, label, block, energy, pulse }) {
-    const { ctx } = this;
-    const bob = Math.sin(this.time * 2.4 + x * 0.001) * 6;
-    const attackShift = pulse > 0 ? pulse * 18 : 0;
-
-    ctx.save();
-    ctx.translate(x + attackShift, y + bob);
-
-    ctx.fillStyle = 'rgba(2, 6, 23, 0.58)';
-    ctx.beginPath();
-    ctx.ellipse(0, radius + 18, radius + 34, 16, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(0, 0, radius, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = 'rgba(255,255,255,0.3)';
-    ctx.beginPath();
-    ctx.arc(-radius * 0.25, -radius * 0.25, radius * 0.35, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.strokeStyle = '#dbeafe';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    ctx.fillStyle = '#f8fafc';
-    ctx.font = 'bold 16px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(label, 0, -radius - 24);
-
-    const barW = radius * 2.2;
-    ctx.fillStyle = '#111827';
-    ctx.fillRect(-barW / 2, -radius - 14, barW, 8);
-    ctx.fillStyle = '#22c55e';
-    ctx.fillRect(-barW / 2, -radius - 14, barW * hpRate, 8);
-
-    ctx.fillStyle = '#bfdbfe';
-    ctx.font = '12px sans-serif';
-    ctx.fillText(`방어 ${block} · 에너지 ${energy}`, 0, radius + 34);
-
-    ctx.restore();
-  }
-
-  draw() {
-    const { ctx, canvas, snapshot } = this;
-    if (!ctx || !snapshot) return;
-
-    const w = canvas.width;
-    const h = canvas.height;
-    const gradient = ctx.createLinearGradient(0, 0, 0, h);
-    gradient.addColorStop(0, '#274690');
-    gradient.addColorStop(0.48, '#0d1b3d');
-    gradient.addColorStop(1, '#060b1f');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, w, h);
-
-    ctx.fillStyle = 'rgba(112, 193, 255, 0.14)';
-    ctx.fillRect(0, h * 0.66, w, h * 0.34);
-
-    ctx.fillStyle = '#fef08a';
-    ctx.font = 'bold 28px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('VS', w * 0.5, h * 0.42);
-
-    this.drawFighter({
-      x: w * 0.24,
-      y: h * 0.54,
-      radius: Math.min(56, w * 0.06),
-      color: '#fb923c',
-      hpRate: snapshot.enemyHpRate,
-      label: snapshot.enemyName || '적',
-      block: snapshot.enemyBlock,
-      energy: snapshot.enemyEnergy,
-      pulse: this.enemyPulse
-    });
-
-    this.drawFighter({
-      x: w * 0.76,
-      y: h * 0.54,
-      radius: Math.min(56, w * 0.06),
-      color: '#38bdf8',
-      hpRate: snapshot.playerHpRate,
-      label: '플레이어',
-      block: snapshot.playerBlock,
-      energy: snapshot.playerEnergy,
-      pulse: this.playerPulse
-    });
-
-    ctx.fillStyle = '#e2e8f0';
-    ctx.font = '15px sans-serif';
-    ctx.fillText(`턴: ${snapshot.turnOwner} · 상태: ${snapshot.stateLabel}`, w * 0.5, h * 0.14);
-
-    ctx.textAlign = 'left';
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.72)';
-    ctx.fillRect(18, 14, 260, 64);
-    ctx.fillStyle = '#cfe4ff';
-    ctx.font = '13px sans-serif';
-    ctx.fillText(`라운드 ${snapshot.roundLabel}`, 30, 38);
-    ctx.fillText(`적 의도: ${snapshot.enemyIntent}`, 30, 60);
-
-    ctx.textAlign = 'right';
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.72)';
-    ctx.fillRect(w - 278, 14, 260, 64);
-    ctx.fillStyle = '#cfe4ff';
-    ctx.fillText(`손패 ${snapshot.handCount}장 · 사용 가능 ${snapshot.playableCount}장`, w - 30, 38);
-    ctx.fillText(snapshot.quickHint, w - 30, 60);
-  }
-}
-
-
 const statusSummary = (actor) => {
   if (!actor) return '없음';
   const bag = [];
@@ -248,68 +57,63 @@ const statusSummary = (actor) => {
   return bag.length ? bag.join(', ') : '없음';
 };
 
-const bindHoverInfoPanel = (triggerEl, panelEl, preferredSide) => {
-  if (!triggerEl || !panelEl) return;
-  let open = false;
-
-  const placePanel = (event) => {
-    const offset = 14;
-    const panelWidth = panelEl.offsetWidth || 280;
-    const panelHeight = panelEl.offsetHeight || 200;
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    const rect = triggerEl.getBoundingClientRect();
-
-    const baseX = preferredSide === 'left'
-      ? rect.left - panelWidth - offset
-      : rect.right + offset;
-    const fallbackX = preferredSide === 'left'
-      ? rect.right + offset
-      : rect.left - panelWidth - offset;
-
-    let nextX = baseX;
-    if (nextX < 8 || nextX + panelWidth > viewportWidth - 8) {
-      nextX = fallbackX;
-    }
-
-    if (nextX < 8) nextX = 8;
-    if (nextX + panelWidth > viewportWidth - 8) nextX = viewportWidth - panelWidth - 8;
-
-    const pointerY = event?.clientY ?? (rect.top + rect.height * 0.5);
-    let nextY = pointerY - panelHeight * 0.5;
-    if (nextY < 8) nextY = 8;
-    if (nextY + panelHeight > viewportHeight - 8) nextY = viewportHeight - panelHeight - 8;
-
-    panelEl.style.left = `${Math.round(nextX)}px`;
-    panelEl.style.top = `${Math.round(nextY)}px`;
-  };
-
-  const show = (event) => {
-    if (!open) {
-      panelEl.classList.add('visible');
-      panelEl.setAttribute('aria-hidden', 'false');
-      open = true;
-    }
-    placePanel(event);
-  };
-
-  const hide = () => {
-    open = false;
-    panelEl.classList.remove('visible');
-    panelEl.setAttribute('aria-hidden', 'true');
-  };
-
-  triggerEl.addEventListener('mouseenter', show);
-  triggerEl.addEventListener('mousemove', show);
-  triggerEl.addEventListener('mouseleave', hide);
-  window.addEventListener('resize', () => {
-    if (open) placePanel();
-  });
+const movePanelNearPointer = (panelEl, nativeEvent, side = 'right') => {
+  const offset = 14;
+  const panelWidth = panelEl.offsetWidth || 280;
+  const panelHeight = panelEl.offsetHeight || 200;
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  const pointerX = nativeEvent?.clientX ?? viewportWidth * 0.5;
+  const pointerY = nativeEvent?.clientY ?? viewportHeight * 0.5;
+  let x = side === 'left' ? pointerX - panelWidth - offset : pointerX + offset;
+  if (x < 8) x = 8;
+  if (x + panelWidth > viewportWidth - 8) x = viewportWidth - panelWidth - 8;
+  let y = pointerY - panelHeight * 0.5;
+  if (y < 8) y = 8;
+  if (y + panelHeight > viewportHeight - 8) y = viewportHeight - panelHeight - 8;
+  panelEl.style.left = `${Math.round(x)}px`;
+  panelEl.style.top = `${Math.round(y)}px`;
 };
 
-export function initBattleUI(ui) {
-  bindHoverInfoPanel(ui.playerHitArea, ui.playerHoverInfo, 'right');
-  bindHoverInfoPanel(ui.enemyHitArea, ui.enemyHoverInfo, 'left');
+export function bindBattleHoverPanels(ui) {
+  const show = (panel, event, side) => {
+    panel.classList.add('visible');
+    panel.setAttribute('aria-hidden', 'false');
+    movePanelNearPointer(panel, event, side);
+  };
+  const hide = (panel) => {
+    panel.classList.remove('visible');
+    panel.setAttribute('aria-hidden', 'true');
+  };
+
+  return {
+    showPlayer: (event) => show(ui.playerHoverInfo, event, 'right'),
+    showEnemy: (event) => show(ui.enemyHoverInfo, event, 'left'),
+    hidePlayer: () => hide(ui.playerHoverInfo),
+    hideEnemy: () => hide(ui.enemyHoverInfo)
+  };
+}
+
+export function createBattleSnapshot(game) {
+  const player = game.player;
+  const enemy = game.enemy;
+  return {
+    roundLabel: `${Math.min(game.round + 1, game.totalRounds)} / ${game.totalRounds}`,
+    turnOwner: game.activeSide === 'player' ? '플레이어' : '적',
+    stateLabel: game.state,
+    enemyIntent: enemy?.intent || '-',
+    handCount: player.hand.length,
+    playableCount: player.hand.filter((card) => card.energyCost <= player.energy).length,
+    playerHp: player.hp,
+    playerMaxHp: player.maxHp,
+    playerBlock: player.block,
+    playerEnergy: player.energy,
+    enemyHp: enemy?.hp || 0,
+    enemyMaxHp: enemy?.maxHp || 0,
+    enemyBlock: enemy?.block || 0,
+    enemyEnergy: enemy?.energy || 0,
+    enemyName: enemy?.name || '적'
+  };
 }
 
 export function createUiBindings() {
@@ -319,7 +123,7 @@ export function createUiBindings() {
     resetSaveBtn: document.querySelector('#reset-save-btn'),
     endTurnBtn: document.querySelector('#end-turn-btn'),
     turnGuide: document.querySelector('#turn-guide'),
-    battleCanvas: document.querySelector('#battle-canvas'),
+    gameRoot: document.querySelector('#game-root'),
     playerHp: document.querySelector('#player-hp'),
     playerMaxHp: document.querySelector('#player-max-hp'),
     playerBlock: document.querySelector('#player-block'),
@@ -334,14 +138,6 @@ export function createUiBindings() {
     enemyActions: document.querySelector('#enemy-actions'),
     playerStatus: document.querySelector('#player-status'),
     enemyStatus: document.querySelector('#enemy-status'),
-    enemyHpFill: document.querySelector('#enemy-hp-fill'),
-    playerHpFill: document.querySelector('#player-hp-fill'),
-    enemySprite: document.querySelector('#enemy-sprite'),
-    playerSprite: document.querySelector('#player-sprite'),
-    enemyPortrait: document.querySelector('#enemy-portrait'),
-    playerPortrait: document.querySelector('#player-portrait'),
-    playerHitArea: document.querySelector('#player-hit-area'),
-    enemyHitArea: document.querySelector('#enemy-hit-area'),
     playerHoverInfo: document.querySelector('#player-hover-info'),
     enemyHoverInfo: document.querySelector('#enemy-hover-info'),
     regionName: document.querySelector('#region-name'),
@@ -368,8 +164,7 @@ export function createUiBindings() {
     playedCards: document.querySelector('#played-cards'),
     discoverPanel: document.querySelector('#discover-panel'),
     discoverCards: document.querySelector('#discover-cards'),
-    log: document.querySelector('#log'),
-    battleCanvasRenderer: new BattleCanvas(document.querySelector('#battle-canvas'))
+    log: document.querySelector('#log')
   };
 }
 
@@ -391,8 +186,7 @@ export function render(ui, game, actions) {
   ui.regionName.textContent = game.region;
   ui.roundInfo.textContent = `${Math.min(game.round + 1, game.totalRounds)} / ${game.totalRounds}`;
   ui.battleState.textContent = game.state;
-  const turnOwnerLabel = game.state === STATES.ROUTE_SELECT ? '경로 선택' : (game.activeSide === 'player' ? '플레이어' : '적');
-  ui.turnOwner.textContent = turnOwnerLabel;
+  ui.turnOwner.textContent = game.state === STATES.ROUTE_SELECT ? '경로 선택' : (game.activeSide === 'player' ? '플레이어' : '적');
   ui.score.textContent = game.score;
   ui.playerDraw.textContent = game.player.drawPile.length;
   ui.playerDiscard.textContent = game.player.discardPile.length;
@@ -405,35 +199,6 @@ export function render(ui, game, actions) {
     : game.state === STATES.ENEMY_TURN
       ? '적 행동 처리 중입니다. 잠시 기다려 주세요.'
       : '상태에 맞는 진행 버튼을 선택해 전투를 이어가세요.';
-
-  const enemyPortrait = game.enemy?.archetypeId ? ENEMY_ARCHETYPES[game.enemy.archetypeId]?.image : null;
-  ui.enemyPortrait.src = enemyPortrait || PLAYER_PORTRAIT;
-  ui.enemyPortrait.alt = game.enemy ? `${game.enemy.name} 초상` : '적 초상';
-  ui.playerPortrait.src = PLAYER_PORTRAIT;
-  ui.playerPortrait.alt = '플레이어 초상';
-
-  const playerHpRate = game.player.maxHp ? (game.player.hp / game.player.maxHp) * 100 : 0;
-  const enemyHpRate = game.enemy?.maxHp ? ((game.enemy.hp || 0) / game.enemy.maxHp) * 100 : 0;
-  ui.playerHpFill.style.width = `${Math.max(0, Math.min(100, playerHpRate))}%`;
-  ui.enemyHpFill.style.width = `${Math.max(0, Math.min(100, enemyHpRate))}%`;
-
-  ui.battleCanvasRenderer.update({
-    activeSide: game.activeSide,
-    turnOwner: turnOwnerLabel,
-    stateLabel: game.state,
-    roundLabel: `${Math.min(game.round + 1, game.totalRounds)} / ${game.totalRounds}`,
-    enemyIntent: game.enemy?.intent || '-',
-    handCount: game.player.hand.length,
-    playableCount: game.player.hand.filter((card) => card.energyCost <= game.player.energy).length,
-    quickHint: game.state === STATES.PLAYER_TURN ? '카드 선택 후 턴 종료' : '턴 처리 중',
-    playerBlock: game.player.block,
-    playerEnergy: game.player.energy,
-    enemyBlock: game.enemy?.block || 0,
-    enemyEnergy: game.enemy?.energy || 0,
-    playerHpRate: Math.max(0, Math.min(1, playerHpRate / 100)),
-    enemyHpRate: Math.max(0, Math.min(1, enemyHpRate / 100)),
-    enemyName: game.enemy?.name || '적'
-  });
 
   ui.hand.innerHTML = '';
   game.player.hand.forEach((card, idx) => {
@@ -482,8 +247,7 @@ export function render(ui, game, actions) {
       ui.rewardCards.appendChild(node);
     });
 
-    const removeChoices = game.removeChoices || [];
-    removeChoices.forEach((choice) => {
+    (game.removeChoices || []).forEach((choice) => {
       const card = CARD_LIBRARY[choice.id];
       if (!card) return;
       const node = document.createElement('article');
@@ -497,13 +261,6 @@ export function render(ui, game, actions) {
       node.appendChild(rm);
       ui.removeDeckCards.appendChild(node);
     });
-
-    if (!removeChoices.length) {
-      const empty = document.createElement('div');
-      empty.className = 'history-item';
-      empty.textContent = '덱이 5장 이하라 제거 후보가 생성되지 않았습니다.';
-      ui.removeDeckCards.appendChild(empty);
-    }
 
     ui.skipRewardBtn.disabled = game.rewardAccepted;
     ui.finishDeckBuildBtn.disabled = !game.rewardAccepted;
@@ -528,36 +285,26 @@ export function render(ui, game, actions) {
   }
 
   ui.playedCards.innerHTML = '';
-  if (!game.playedCardsHistory.length) {
-    const empty = document.createElement('div');
-    empty.className = 'history-item';
-    empty.textContent = '아직 사용한 카드가 없습니다.';
-    ui.playedCards.appendChild(empty);
-  } else {
-    game.playedCardsHistory.forEach((history, index) => {
-      const item = document.createElement('div');
-      item.className = 'history-item';
-      item.textContent = `${index + 1}. ${history.name} (${history.id})`;
-      ui.playedCards.appendChild(item);
-    });
-  }
+  (game.playedCardsHistory.length ? game.playedCardsHistory : [{ name: '아직 사용한 카드가 없습니다.', id: '-' }]).forEach((history, index) => {
+    const item = document.createElement('div');
+    item.className = 'history-item';
+    item.textContent = history.id === '-' ? history.name : `${index + 1}. ${history.name} (${history.id})`;
+    ui.playedCards.appendChild(item);
+  });
 
-  const discovering = game.discoverChoices.length > 0;
-  ui.discoverPanel.classList.toggle('hidden', !discovering);
+  ui.discoverPanel.classList.toggle('hidden', game.discoverChoices.length === 0);
   ui.discoverCards.innerHTML = '';
-  if (discovering) {
-    game.discoverChoices.forEach((card) => {
-      const node = document.createElement('article');
-      node.className = `card sigil-${card.sigil.toLowerCase()}`;
-      node.innerHTML = cardTemplate(card);
-      const b = document.createElement('button');
-      b.className = 'play-btn';
-      b.textContent = '손패로 가져오기';
-      b.addEventListener('click', () => actions.selectDiscoverCard(card.id));
-      node.appendChild(b);
-      ui.discoverCards.appendChild(node);
-    });
-  }
+  game.discoverChoices.forEach((card) => {
+    const node = document.createElement('article');
+    node.className = `card sigil-${card.sigil.toLowerCase()}`;
+    node.innerHTML = cardTemplate(card);
+    const b = document.createElement('button');
+    b.className = 'play-btn';
+    b.textContent = '손패로 가져오기';
+    b.addEventListener('click', () => actions.selectDiscoverCard(card.id));
+    node.appendChild(b);
+    ui.discoverCards.appendChild(node);
+  });
 
   ui.log.innerHTML = '';
   game.logs.forEach((line) => {
