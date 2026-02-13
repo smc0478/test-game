@@ -267,7 +267,7 @@ export function render(ui, game, actions) {
     btn.className = 'play-btn';
     btn.textContent = '사용';
     btn.disabled = game.state !== STATES.PLAYER_TURN || game.player.energy < card.energyCost;
-    btn.addEventListener('click', () => actions.playCardAt(idx));
+    btn.addEventListener('click', () => actions.playCardAt(idx, card.id));
     wrap.appendChild(btn);
     ui.hand.appendChild(wrap);
   });

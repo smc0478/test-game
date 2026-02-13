@@ -715,10 +715,10 @@ export function createEngine(game, hooks) {
     renderAndPersist();
   };
 
-  const playCardAt = (idx) => {
+  const playCardAt = (idx, expectedCardId = null) => {
     if (game.state !== STATES.PLAYER_TURN) return;
     const card = game.player.hand[idx];
-    if (!card || card.energyCost > game.player.energy) return;
+    if (!card || (expectedCardId && card.id !== expectedCardId) || card.energyCost > game.player.energy) return;
     const hpCost = getHpCost(card);
     if (game.player.hp <= hpCost) return;
     game.player.energy -= card.energyCost;
