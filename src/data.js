@@ -29,6 +29,23 @@ const c = (id, name, family, type, energyCost, baseValue, sigil, effect, descrip
   id, name, family, type, energyCost, baseValue, sigil, effect, description, image: art(name, sigil)
 });
 
+const enemyArt = (name, icon, colorA, colorB) => {
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 220'>
+    <defs>
+      <linearGradient id='enemyBg' x1='0' y1='0' x2='1' y2='1'>
+        <stop offset='0' stop-color='${colorA}'/>
+        <stop offset='1' stop-color='${colorB}'/>
+      </linearGradient>
+    </defs>
+    <rect width='220' height='220' rx='28' fill='url(#enemyBg)'/>
+    <circle cx='110' cy='90' r='54' fill='rgba(15,23,42,0.45)' stroke='rgba(255,255,255,0.55)' stroke-width='3'/>
+    <text x='110' y='108' text-anchor='middle' font-size='58'>${icon}</text>
+    <rect x='18' y='154' width='184' height='48' rx='12' fill='rgba(15,23,42,0.62)'/>
+    <text x='110' y='184' text-anchor='middle' fill='white' font-size='18' font-weight='700' font-family='sans-serif'>${name}</text>
+  </svg>`;
+  return `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`;
+};
+
 const BASE_CARD_LIBRARY = {
   C001: c('C001', '엠버 스트라이크', 'emberStrike', 'attack', 1, 7, 'Flame', [{ kind: 'attack', value: 7 }], '기본 화염 공격입니다.'),
   C002: c('C002', '블레이즈 러시', 'emberStrike', 'attack', 1, 8, 'Flame', [{ kind: 'attack', value: 8 }], '순수 공격 수치가 높은 기본 카드입니다.'),
@@ -136,20 +153,20 @@ export const ROUTE_MODIFIERS = [
 ];
 
 export const ENEMY_ARCHETYPES = {
-  emberFox: { id: 'emberFox', name: '잿불 여우', hp: 52, deck: ['C001', 'C002', 'C014', 'C021', 'C017', 'C033'] },
-  ironShell: { id: 'ironShell', name: '철갑 딱정벌레', hp: 64, deck: ['C006', 'C007', 'C015', 'C016', 'C022', 'C029'] },
-  sandBandit: { id: 'sandBandit', name: '사막 약탈자', hp: 60, deck: ['C001', 'C004', 'C020', 'C024', 'C035', 'C044'] },
-  thornDruid: { id: 'thornDruid', name: '가시 드루이드', hp: 70, deck: ['C003', 'C006', 'C011', 'C013', 'C024', 'C028', 'C037'] },
-  mistArcher: { id: 'mistArcher', name: '안개 궁수', hp: 58, deck: ['C004', 'C008', 'C014', 'C018', 'C031', 'C045'] },
-  vineGiant: { id: 'vineGiant', name: '덩굴 거인', hp: 82, deck: ['C006', 'C011', 'C016', 'C019', 'C029', 'C037'] },
-  gearSentinel: { id: 'gearSentinel', name: '기어 센티넬', hp: 74, deck: ['C004', 'C008', 'C015', 'C017', 'C022', 'C025', 'C029'] },
-  steamKnight: { id: 'steamKnight', name: '증기 기사', hp: 78, deck: ['C002', 'C007', 'C015', 'C022', 'C030', 'C040'] },
-  arcSniper: { id: 'arcSniper', name: '아크 스나이퍼', hp: 66, deck: ['C004', 'C010', 'C018', 'C025', 'C041', 'C050'] },
-  voidAcolyte: { id: 'voidAcolyte', name: '공허 사도', hp: 80, deck: ['C005', 'C010', 'C012', 'C018', 'C026', 'C027', 'C045'] },
-  voidReaper: { id: 'voidReaper', name: '공허 수확자', hp: 88, deck: ['C005', 'C010', 'C012', 'C018', 'C023', 'C026', 'C027', 'C039'] },
-  ancientWarden: { id: 'ancientWarden', name: '고대 수문장', hp: 92, deck: ['C006', 'C011', 'C016', 'C024', 'C033', 'C042', 'C051'] },
-  chronoWatcher: { id: 'chronoWatcher', name: '시간 감시자', hp: 86, deck: ['C008', 'C015', 'C031', 'C032', 'C040', 'C042', 'C050'] },
-  prismOverlord: { id: 'prismOverlord', name: '프리즘 군주', hp: 98, deck: ['C001', 'C011', 'C012', 'C021', 'C023', 'C026', 'C030', 'C033', 'C034'] }
+  emberFox: { id: 'emberFox', name: '잿불 여우', hp: 52, deck: ['C001', 'C002', 'C014', 'C021', 'C017', 'C033'], image: enemyArt('잿불 여우', '🦊', '#fb923c', '#7c2d12') },
+  ironShell: { id: 'ironShell', name: '철갑 딱정벌레', hp: 64, deck: ['C006', 'C007', 'C015', 'C016', 'C022', 'C029'], image: enemyArt('철갑 딱정벌레', '🪲', '#60a5fa', '#1e3a8a') },
+  sandBandit: { id: 'sandBandit', name: '사막 약탈자', hp: 60, deck: ['C001', 'C004', 'C020', 'C024', 'C035', 'C044'], image: enemyArt('사막 약탈자', '🏜️', '#fbbf24', '#92400e') },
+  thornDruid: { id: 'thornDruid', name: '가시 드루이드', hp: 70, deck: ['C003', 'C006', 'C011', 'C013', 'C024', 'C028', 'C037'], image: enemyArt('가시 드루이드', '🌿', '#34d399', '#14532d') },
+  mistArcher: { id: 'mistArcher', name: '안개 궁수', hp: 58, deck: ['C004', 'C008', 'C014', 'C018', 'C031', 'C045'], image: enemyArt('안개 궁수', '🏹', '#a5b4fc', '#1e1b4b') },
+  vineGiant: { id: 'vineGiant', name: '덩굴 거인', hp: 82, deck: ['C006', 'C011', 'C016', 'C019', 'C029', 'C037'], image: enemyArt('덩굴 거인', '🪵', '#4ade80', '#166534') },
+  gearSentinel: { id: 'gearSentinel', name: '기어 센티넬', hp: 74, deck: ['C004', 'C008', 'C015', 'C017', 'C022', 'C025', 'C029'], image: enemyArt('기어 센티넬', '⚙️', '#38bdf8', '#0c4a6e') },
+  steamKnight: { id: 'steamKnight', name: '증기 기사', hp: 78, deck: ['C002', 'C007', 'C015', 'C022', 'C030', 'C040'], image: enemyArt('증기 기사', '🛡️', '#93c5fd', '#172554') },
+  arcSniper: { id: 'arcSniper', name: '아크 스나이퍼', hp: 66, deck: ['C004', 'C010', 'C018', 'C025', 'C041', 'C050'], image: enemyArt('아크 스나이퍼', '🎯', '#67e8f9', '#155e75') },
+  voidAcolyte: { id: 'voidAcolyte', name: '공허 사도', hp: 80, deck: ['C005', 'C010', 'C012', 'C018', 'C026', 'C027', 'C045'], image: enemyArt('공허 사도', '🌌', '#c084fc', '#4c1d95') },
+  voidReaper: { id: 'voidReaper', name: '공허 수확자', hp: 88, deck: ['C005', 'C010', 'C012', 'C018', 'C023', 'C026', 'C027', 'C039'], image: enemyArt('공허 수확자', '☄️', '#a78bfa', '#312e81') },
+  ancientWarden: { id: 'ancientWarden', name: '고대 수문장', hp: 92, deck: ['C006', 'C011', 'C016', 'C024', 'C033', 'C042', 'C051'], image: enemyArt('고대 수문장', '🗿', '#94a3b8', '#0f172a') },
+  chronoWatcher: { id: 'chronoWatcher', name: '시간 감시자', hp: 86, deck: ['C008', 'C015', 'C031', 'C032', 'C040', 'C042', 'C050'], image: enemyArt('시간 감시자', '⏳', '#93c5fd', '#1e1b4b') },
+  prismOverlord: { id: 'prismOverlord', name: '프리즘 군주', hp: 98, deck: ['C001', 'C011', 'C012', 'C021', 'C023', 'C026', 'C030', 'C033', 'C034'], image: enemyArt('프리즘 군주', '👑', '#f9a8d4', '#4c1d95') }
 };
 
 export const ENEMY_BESTIARY = {
