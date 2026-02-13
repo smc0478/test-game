@@ -39,6 +39,7 @@ export function createGame() {
 
 export function createEngine(game, hooks) {
   const { onRender } = hooks;
+  const PLAYER_BASE_DRAW = 5;
   const log = (msg, type = 'normal') => {
     game.logs.unshift(`[${new Date().toLocaleTimeString('ko-KR')}] ${msg}::${type}`);
     game.logs = game.logs.slice(0, 48);
@@ -133,7 +134,7 @@ export function createEngine(game, hooks) {
     actor.turnScoreMultiplier = false;
     actor.thorns = 0;
     actor.vulnerable = Math.max(0, actor.vulnerable - 1);
-    draw(actor, 5 + (isPlayer ? 0 : (actor.extraDrawPerTurn || 0)));
+    draw(actor, PLAYER_BASE_DRAW + (isPlayer ? 0 : (actor.extraDrawPerTurn || 0)));
     if (isPlayer) log('플레이어 턴 시작');
   };
 
@@ -614,6 +615,14 @@ export function createEngine(game, hooks) {
 
   const endPlayerTurn = () => {
     if (game.state !== STATES.PLAYER_TURN) return;
+
+    if (game.player.hand.length > PLAYER_BASE_DRAW) {
+      const overflow = game.player.hand.splice(PLAYER_BASE_DRAW);
+      game.player.discardPile.push(...overflow.map((card) => card.id));
+    } else if (game.player.hand.length < PLAYER_BASE_DRAW) {
+      draw(game.player, PLAYER_BASE_DRAW - game.player.hand.length);
+    }
+
     game.player.lastTurnFamilies = new Set(game.player.turnFamiliesUsed);
     game.state = STATES.PLANNING;
     game.activeSide = 'enemy';
