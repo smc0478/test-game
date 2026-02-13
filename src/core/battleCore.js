@@ -181,7 +181,7 @@ export function createEngine(game, hooks) {
     for (const effect of effects) {
       if (effect.kind === 'attack') total += effect.value;
       if (effect.kind === 'convertBlockToDamage') total += source.block;
-      if (effect.kind === 'echoAttack' && (source.turnFamilyCounts?.[card.family] || 0) > 1) total += effect.value;
+      if (effect.kind === 'echoAttack' && ((source.turnFamilyCounts?.[card.family] || 0) + 1) > 1) total += effect.value;
       if (effect.kind === 'ifEnemyIntent' && target.intentType === effect.intent) {
         const nested = effectListAttack(effect.then || [], source, target, card);
         if (nested === null) return null;
