@@ -35,7 +35,15 @@ const cardTemplate = (card) => `<img class='card-art' src='${card.image}' alt='$
 <p class='small'>설명: ${card.description || '설명 없음'}</p>`;
 
 const wrap = document.querySelector('#codex-cards');
-Object.values(CARD_LIBRARY).forEach((card) => {
+const cardCountLabel = document.querySelector('#card-count-label');
+const enemyCountLabel = document.querySelector('#enemy-count-label');
+
+const cards = Object.values(CARD_LIBRARY);
+const enemies = Object.values(ENEMY_ARCHETYPES);
+
+cardCountLabel.textContent = String(cards.length);
+enemyCountLabel.textContent = String(enemies.length);
+cards.forEach((card) => {
   const node = document.createElement('article');
   node.className = 'card mini';
   node.innerHTML = cardTemplate(card);
@@ -43,7 +51,7 @@ Object.values(CARD_LIBRARY).forEach((card) => {
 });
 
 const enemyWrap = document.querySelector('#enemy-codex');
-Object.values(ENEMY_ARCHETYPES).forEach((enemy) => {
+enemies.forEach((enemy) => {
   const detail = ENEMY_BESTIARY[enemy.id];
   const node = document.createElement('article');
   node.className = 'guide-item';
