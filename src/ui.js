@@ -102,6 +102,20 @@ const movePanelNearPointer = (panelEl, nativeEvent, side = 'right') => {
   panelEl.style.top = `${Math.round(y)}px`;
 };
 
+const createRouteChoiceNode = (route, index, actions) => {
+  const node = document.createElement('article');
+  node.className = 'guide-item';
+  const regionName = REGIONS.find((r) => r.id === route.regionId)?.name || route.regionId;
+  const enemyName = ENEMY_ARCHETYPES[route.enemyId]?.name || route.enemyId;
+  node.innerHTML = `<h3>${index + 1}. ${regionName}</h3><p>다음 적: ${enemyName}</p><p class='small'>효과: ${route.modifier.name} - ${route.modifier.detail}</p>`;
+  const btn = document.createElement('button');
+  btn.className = 'play-btn';
+  btn.textContent = '이 경로로 이동';
+  btn.addEventListener('click', () => actions.selectRoute(index));
+  node.appendChild(btn);
+  return node;
+};
+
 export function bindBattleHoverPanels(ui) {
   const show = (panel, event, side) => {
     panel.classList.add('visible');
@@ -184,6 +198,8 @@ export function createUiBindings() {
     playerDiscard: document.querySelector('#player-discard'),
     deckSize: document.querySelector('#deck-size'),
     canvasDeckBuildOverlay: document.querySelector('#canvas-deckbuild-overlay'),
+    canvasRouteOverlay: document.querySelector('#canvas-route-overlay'),
+    canvasRouteChoices: document.querySelector('#canvas-route-choices'),
     rewardCards: document.querySelector('#reward-cards'),
     skipRewardBtn: document.querySelector('#skip-reward-btn'),
     finishDeckBuildBtn: document.querySelector('#finish-deck-build-btn'),
@@ -310,20 +326,13 @@ export function render(ui, game, actions) {
   }
 
   ui.routePanel.classList.toggle('hidden', game.state !== STATES.ROUTE_SELECT);
+  ui.canvasRouteOverlay.classList.toggle('hidden', game.state !== STATES.ROUTE_SELECT);
   ui.routeChoices.innerHTML = '';
+  ui.canvasRouteChoices.innerHTML = '';
   if (game.state === STATES.ROUTE_SELECT) {
     game.routeChoices.forEach((route, index) => {
-      const node = document.createElement('article');
-      node.className = 'guide-item';
-      const regionName = REGIONS.find((r) => r.id === route.regionId)?.name || route.regionId;
-      const enemyName = ENEMY_ARCHETYPES[route.enemyId]?.name || route.enemyId;
-      node.innerHTML = `<h3>${index + 1}. ${regionName}</h3><p>다음 적: ${enemyName}</p><p class='small'>효과: ${route.modifier.name} - ${route.modifier.detail}</p>`;
-      const btn = document.createElement('button');
-      btn.className = 'play-btn';
-      btn.textContent = '이 경로로 이동';
-      btn.addEventListener('click', () => actions.selectRoute(index));
-      node.appendChild(btn);
-      ui.routeChoices.appendChild(node);
+      ui.routeChoices.appendChild(createRouteChoiceNode(route, index, actions));
+      ui.canvasRouteChoices.appendChild(createRouteChoiceNode(route, index, actions));
     });
   }
 
