@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>시너지 턴 카드 배틀 v0.5</title>
+  <title>시너지 턴 카드 배틀 v0.6</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="app">
     <header class="top-bar">
       <div>
-        <h1>시너지 턴 카드 배틀 v0.5</h1>
+        <h1>시너지 턴 카드 배틀 v0.6</h1>
         <p class="subtitle">패밀리 공명/전 턴 기억이 추가된 라운드 러닝 모드</p>
       </div>
       <div class="controls">
@@ -32,6 +32,7 @@
         <p>HP: <span id="enemy-hp">0</span> / <span id="enemy-max-hp">0</span></p>
         <p>방어: <span id="enemy-block">0</span></p>
         <p>에너지: <span id="enemy-energy">0</span> / 3</p>
+        <p>의도: <span id="enemy-intent">-</span></p>
       </article>
 
       <article class="panel">
@@ -68,6 +69,6 @@
     </section>
   </main>
 
-  <script src="game.js"></script>
+  <script type="module" src="game.js"></script>
 </body>
 </html>

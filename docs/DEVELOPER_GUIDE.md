@@ -1,20 +1,21 @@
-# Developer Guide v0.5
+# Developer Guide v0.6
 
 ## 개발 원칙
-- GAME_SPEC.md 우선
+- GAME_SPEC 우선
 - 상태 머신 우회 금지
-- 카드/시너지/조건 트리거 수치 변경 시 스펙 버전 증가
+- 스펙 변경(버전 업) 시 문서 동시 업데이트
 
 ## 빠른 검증
-- 구문 체크: `node --check game.js`
-- 로컬 실행: `python3 -m http.server 8000`
+- `node --check game.js`
+- `node --check src/gameEngine.js`
+- `python3 -m http.server 8000`
 
-## 반복 개발 루프
-- 신규 기능: Producer -> Engineer -> QA -> Docs -> PR
-- 버그 수정: QA <-> Engineer
-- 시스템 변경: QA -> Producer(버전 업) -> Engineer -> QA -> Docs
+## 루프 실행 기록
+- 신규 기능 루프: 적 의도 공개/대응 카드 추가
+- 스펙 변경 루프(버전 업): `planning` 상태 + 카드 풀 확장 + 신규 효과
+- 버그 수정 루프: 적 턴 종료 후 전이 혼선 보정
 
-## v0.5 구현 체크포인트
-- `family` 필드가 모든 카드에 존재하는지 확인
-- `echoAttack`, `ifLastTurnFamily`, `selfDamage` 효과 적용 확인
-- `lastTurnFamilies`가 턴 종료 시점에 정상 저장/갱신되는지 확인
+## 협업 메모
+- Producer: 의도 기반 전투 강화 요청
+- Engineer: 모듈 분리 + 신규 효과 구현
+- Docs: 변경 근거/테스트 절차/리스크 문서화

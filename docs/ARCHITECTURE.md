@@ -1,32 +1,24 @@
-# Architecture v0.5
+# Architecture v0.6
 
 ## 상태 머신
-- `ready`: 대기
-- `playerTurn`: 플레이어 행동
-- `enemyTurn`: 적 행동
-- `resolution`: 승패 판정
-- `deckBuild`: 보상 카드 선택
-- `gameOver`: 런 실패
-- `runComplete`: 런 성공
+- `ready`
+- `planning` (신규)
+- `playerTurn`
+- `enemyTurn`
+- `resolution`
+- `deckBuild`
+- `gameOver`
+- `runComplete`
 
-## 라운드 흐름
-1. 라운드 시작 시 지역/적 로드
-2. 전투 진행
-3. 승리 시 `deckBuild`에서 3장 중 1장 선택
-4. 다음 라운드 진입
-5. 최종 라운드 승리 시 `runComplete`
+## 모듈 구조
+- `game.js`: 부트스트랩/이벤트 바인딩
+- `src/constants.js`: 상태/상수 정의
+- `src/data.js`: 카드/지역/적 데이터
+- `src/gameEngine.js`: 전투 엔진 및 상태 전이
+- `src/ui.js`: 렌더링/DOM 관리
+- `src/utils.js`: 공통 유틸
 
-## 데이터 구조
-- 카드 라이브러리: `CARD_LIBRARY`
-  - 필수 키: `id`, `name`, `family`, `type`, `energyCost`, `baseValue`, `sigil`, `effect`
-- 지역 정의: `REGIONS`
-- 적 아키타입: `ENEMY_ARCHETYPES`
-- 런 상태: `game`
-
-## 턴 메모리 아키텍처
-- `turnFamilyCounts`: 현재 턴 패밀리 사용 횟수
-- `turnFamiliesUsed`: 현재 턴에 사용한 패밀리 집합
-- `lastTurnFamilies`: 직전 턴 패밀리 기억 집합
-- 조건 효과:
-  - `echoAttack`: 같은 턴 동명 패밀리 재사용 조건
-  - `ifLastTurnFamily`: 전 턴 패밀리 기억 조건
+## Producer ↔ Engineer 피드백 반영
+- Producer 요청: “적 행동 예측을 전술 축으로 강화”
+- Engineer 제안: “planning 상태에서 intent 확정 + UI 노출”
+- 합의 결과: `swapIntent`, `ifEnemyIntent` 효과를 스펙/코드에 동시 반영
