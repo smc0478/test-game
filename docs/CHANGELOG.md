@@ -1,3 +1,12 @@
+## v2.5.0
+### Added
+- 성운 드로우 컨셉 카드 5장(C027~C031)을 추가해 드로우-템포 빌드 선택지를 확장.
+- 신규 효과 타입 `drawByFamilyCount`, `attackPerHandCard`, `redrawHandTo`, `gainNextTurnEnergy`, `drawThenDiscount`를 전투 로직에 반영.
+
+### Changed
+- 카드 풀을 31장(C001~C031)으로 확장.
+- 도감 동기화: 신규 성운 컨셉 카드와 효과 문구가 카드 목록에 노출되는지 확인.
+
 ## v2.4.0
 ### Added
 - 리프 방어 컨셉 카드 5장(C022~C026)을 추가해 방어-반격 빌드 선택지를 확장.

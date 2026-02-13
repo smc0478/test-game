@@ -19,6 +19,7 @@ function createActor({ name, hp, deckIds }) {
     turnCardNameCounts: {},
     pendingNextAttackBonus: 0,
     blockRetainTurns: 0,
+    nextTurnEnergyBonus: 0,
     intent: '준비', intentType: 'skill', intentDamage: null, lastPlayedCardId: null,
     archetypeId: null,
     threatLevel: 1,
@@ -83,15 +84,19 @@ export function createEngine(game, hooks) {
   };
 
   const draw = (actor, n) => {
+    const drawn = [];
     for (let i = 0; i < n; i += 1) {
       if (actor.hand.length >= MAX_HAND) break;
       if (actor.drawPile.length === 0) {
-        if (actor.discardPile.length === 0) return;
+        if (actor.discardPile.length === 0) return drawn;
         actor.drawPile = shuffle(actor.discardPile);
         actor.discardPile = [];
       }
-      actor.hand.push(cloneCard(actor.drawPile.shift()));
+      const card = cloneCard(actor.drawPile.shift());
+      actor.hand.push(card);
+      drawn.push(card);
     }
+    return drawn;
   };
 
   const scoreAction = (card) => { game.score += card.type === 'attack' ? 9 : 7; };
@@ -130,6 +135,11 @@ export function createEngine(game, hooks) {
     }
     const baseEnergy = MAX_ENERGY + (isPlayer ? 0 : (actor.extraEnergyPerTurn || 0));
     actor.energy = isPlayer ? baseEnergy : getEnemyTurnEnergy(baseEnergy);
+    if (isPlayer && actor.nextTurnEnergyBonus > 0) {
+      actor.energy += actor.nextTurnEnergyBonus;
+      log(`${actor.name} 다음 턴 에너지 보너스 +${actor.nextTurnEnergyBonus}`);
+      actor.nextTurnEnergyBonus = 0;
+    }
     actor.turnFamilyCounts = {};
     actor.turnFamiliesUsed = new Set();
     actor.comboChain = 0;
@@ -219,6 +229,7 @@ export function createEngine(game, hooks) {
         if (nested === null) return null;
         total += nested;
       }
+      if (effect.kind === 'attackPerHandCard') total += source.hand.length * effect.value;
       if (effect.kind === 'gamble' || effect.kind === 'rewind') return null;
     }
     return total;
@@ -406,6 +417,33 @@ export function createEngine(game, hooks) {
     if (effect.kind === 'retainBlockTurns') {
       source.blockRetainTurns = Math.max(source.blockRetainTurns, effect.value);
       log(`${source.name} 방어 유지 ${effect.value}턴`);
+    }
+    if (effect.kind === 'drawByFamilyCount') {
+      const familyUsed = source.turnFamilyCounts[card.family] || 0;
+      const amount = familyUsed * effect.value;
+      draw(source, amount);
+      log(`${source.name} 패밀리 순환 드로우 ${amount}`);
+    }
+    if (effect.kind === 'attackPerHandCard') {
+      const dealt = applyDamage(target, source.hand.length * effect.value);
+      log(`${source.name} 손패 비례 공격 ${dealt}`);
+    }
+    if (effect.kind === 'redrawHandTo') {
+      source.discardPile.push(...source.hand.map((handCard) => handCard.id));
+      source.hand = [];
+      draw(source, effect.value);
+      log(`${source.name} 손패 재편: ${effect.value}장 재드로우`);
+    }
+    if (effect.kind === 'gainNextTurnEnergy') {
+      source.nextTurnEnergyBonus = (source.nextTurnEnergyBonus || 0) + effect.value;
+      log(`${source.name} 다음 턴 에너지 예약 +${effect.value}`);
+    }
+    if (effect.kind === 'drawThenDiscount') {
+      const drawnCards = draw(source, effect.value);
+      drawnCards.forEach((drawnCard) => {
+        drawnCard.energyCost = Math.max(0, drawnCard.energyCost - (effect.discount || 1));
+      });
+      if (drawnCards.length > 0) log(`${source.name} 드로우 카드 코스트 감소 ${drawnCards.length}장`);
     }
 
     if (effect.kind === 'rewind') {
