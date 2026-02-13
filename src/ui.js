@@ -64,12 +64,155 @@ const cardTemplate = (card) => `<div class='card-top'>
 <p><strong>효과</strong> ${card.effect.map(effectText).join(', ')}</p>
 <p class='small'>${card.description || '설명 없음'}</p>`;
 
+class BattleCanvas {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas?.getContext('2d');
+    this.time = 0;
+    this.lastTs = 0;
+    this.playerPulse = 0;
+    this.enemyPulse = 0;
+    if (this.ctx) {
+      requestAnimationFrame((ts) => this.tick(ts));
+    }
+  }
+
+  tick(ts) {
+    const delta = this.lastTs ? (ts - this.lastTs) / 1000 : 0;
+    this.lastTs = ts;
+    this.time += delta;
+    this.playerPulse = Math.max(0, this.playerPulse - delta * 2.2);
+    this.enemyPulse = Math.max(0, this.enemyPulse - delta * 2.2);
+    if (this.snapshot) {
+      this.draw();
+    }
+    requestAnimationFrame((next) => this.tick(next));
+  }
+
+  update(snapshot) {
+    if (!this.ctx) return;
+    if (this.snapshot && snapshot.activeSide !== this.snapshot.activeSide) {
+      if (snapshot.activeSide === 'player') this.playerPulse = 1;
+      if (snapshot.activeSide === 'enemy') this.enemyPulse = 1;
+    }
+    this.snapshot = snapshot;
+    this.resize();
+  }
+
+  resize() {
+    const rect = this.canvas.getBoundingClientRect();
+    const width = Math.max(320, Math.floor(rect.width));
+    const height = Math.max(220, Math.floor(rect.height));
+    if (this.canvas.width !== width || this.canvas.height !== height) {
+      this.canvas.width = width;
+      this.canvas.height = height;
+    }
+  }
+
+  drawFighter({ x, y, radius, color, hpRate, label, block, energy, pulse }) {
+    const { ctx } = this;
+    const bob = Math.sin(this.time * 2.4 + x * 0.001) * 6;
+    const attackShift = pulse > 0 ? pulse * 18 : 0;
+
+    ctx.save();
+    ctx.translate(x + attackShift, y + bob);
+
+    ctx.fillStyle = 'rgba(2, 6, 23, 0.58)';
+    ctx.beginPath();
+    ctx.ellipse(0, radius + 18, radius + 34, 16, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.beginPath();
+    ctx.arc(-radius * 0.25, -radius * 0.25, radius * 0.35, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = '#dbeafe';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, 0, -radius - 24);
+
+    const barW = radius * 2.2;
+    ctx.fillStyle = '#111827';
+    ctx.fillRect(-barW / 2, -radius - 14, barW, 8);
+    ctx.fillStyle = '#22c55e';
+    ctx.fillRect(-barW / 2, -radius - 14, barW * hpRate, 8);
+
+    ctx.fillStyle = '#bfdbfe';
+    ctx.font = '12px sans-serif';
+    ctx.fillText(`방어 ${block} · 에너지 ${energy}`, 0, radius + 34);
+
+    ctx.restore();
+  }
+
+  draw() {
+    const { ctx, canvas, snapshot } = this;
+    if (!ctx || !snapshot) return;
+
+    const w = canvas.width;
+    const h = canvas.height;
+    const gradient = ctx.createLinearGradient(0, 0, 0, h);
+    gradient.addColorStop(0, '#274690');
+    gradient.addColorStop(0.48, '#0d1b3d');
+    gradient.addColorStop(1, '#060b1f');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, w, h);
+
+    ctx.fillStyle = 'rgba(112, 193, 255, 0.14)';
+    ctx.fillRect(0, h * 0.66, w, h * 0.34);
+
+    ctx.fillStyle = '#fef08a';
+    ctx.font = 'bold 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('VS', w * 0.5, h * 0.42);
+
+    this.drawFighter({
+      x: w * 0.24,
+      y: h * 0.54,
+      radius: Math.min(56, w * 0.06),
+      color: '#fb923c',
+      hpRate: snapshot.enemyHpRate,
+      label: snapshot.enemyName || '적',
+      block: snapshot.enemyBlock,
+      energy: snapshot.enemyEnergy,
+      pulse: this.enemyPulse
+    });
+
+    this.drawFighter({
+      x: w * 0.76,
+      y: h * 0.54,
+      radius: Math.min(56, w * 0.06),
+      color: '#38bdf8',
+      hpRate: snapshot.playerHpRate,
+      label: '플레이어',
+      block: snapshot.playerBlock,
+      energy: snapshot.playerEnergy,
+      pulse: this.playerPulse
+    });
+
+    ctx.fillStyle = '#e2e8f0';
+    ctx.font = '15px sans-serif';
+    ctx.fillText(`턴: ${snapshot.turnOwner}`, w * 0.5, h * 0.14);
+  }
+}
+
 export function createUiBindings() {
   return {
     startBtn: document.querySelector('#start-btn'),
     resumeBtn: document.querySelector('#resume-btn'),
     resetSaveBtn: document.querySelector('#reset-save-btn'),
     endTurnBtn: document.querySelector('#end-turn-btn'),
+    turnGuide: document.querySelector('#turn-guide'),
+    battleCanvas: document.querySelector('#battle-canvas'),
     playerHp: document.querySelector('#player-hp'),
     playerMaxHp: document.querySelector('#player-max-hp'),
     playerBlock: document.querySelector('#player-block'),
@@ -110,7 +253,8 @@ export function createUiBindings() {
     playedCards: document.querySelector('#played-cards'),
     discoverPanel: document.querySelector('#discover-panel'),
     discoverCards: document.querySelector('#discover-cards'),
-    log: document.querySelector('#log')
+    log: document.querySelector('#log'),
+    battleCanvasRenderer: new BattleCanvas(document.querySelector('#battle-canvas'))
   };
 }
 
@@ -130,7 +274,8 @@ export function render(ui, game, actions) {
   ui.regionName.textContent = game.region;
   ui.roundInfo.textContent = `${Math.min(game.round + 1, game.totalRounds)} / ${game.totalRounds}`;
   ui.battleState.textContent = game.state;
-  ui.turnOwner.textContent = game.state === STATES.ROUTE_SELECT ? '경로 선택' : (game.activeSide === 'player' ? '플레이어' : '적');
+  const turnOwnerLabel = game.state === STATES.ROUTE_SELECT ? '경로 선택' : (game.activeSide === 'player' ? '플레이어' : '적');
+  ui.turnOwner.textContent = turnOwnerLabel;
   ui.score.textContent = game.score;
   ui.playerDraw.textContent = game.player.drawPile.length;
   ui.playerDiscard.textContent = game.player.discardPile.length;
@@ -138,13 +283,28 @@ export function render(ui, game, actions) {
   ui.goalText.textContent = game.state === STATES.RUN_COMPLETE ? '목표 달성! 모든 지역 정복 완료' : `목표: ${game.totalRounds}라운드 클리어`;
   ui.endTurnBtn.disabled = game.state !== STATES.PLAYER_TURN;
   ui.resumeBtn.disabled = !actions.hasSavedRun();
+  ui.turnGuide.textContent = game.state === STATES.PLAYER_TURN
+    ? '카드를 고르고 턴 종료 버튼으로 적 턴을 진행하세요.'
+    : game.state === STATES.ENEMY_TURN
+      ? '적 행동 처리 중입니다. 잠시 기다려 주세요.'
+      : '상태에 맞는 진행 버튼을 선택해 전투를 이어가세요.';
 
   const playerHpRate = game.player.maxHp ? (game.player.hp / game.player.maxHp) * 100 : 0;
   const enemyHpRate = game.enemy?.maxHp ? ((game.enemy.hp || 0) / game.enemy.maxHp) * 100 : 0;
   ui.playerHpFill.style.width = `${Math.max(0, Math.min(100, playerHpRate))}%`;
   ui.enemyHpFill.style.width = `${Math.max(0, Math.min(100, enemyHpRate))}%`;
-  ui.playerSprite.classList.toggle('attacking', game.activeSide === 'player' && game.state === STATES.PLAYER_TURN);
-  ui.enemySprite.classList.toggle('attacking', game.activeSide === 'enemy' && game.state === STATES.ENEMY_TURN);
+
+  ui.battleCanvasRenderer.update({
+    activeSide: game.activeSide,
+    turnOwner: turnOwnerLabel,
+    playerBlock: game.player.block,
+    playerEnergy: game.player.energy,
+    enemyBlock: game.enemy?.block || 0,
+    enemyEnergy: game.enemy?.energy || 0,
+    playerHpRate: Math.max(0, Math.min(1, playerHpRate / 100)),
+    enemyHpRate: Math.max(0, Math.min(1, enemyHpRate / 100)),
+    enemyName: game.enemy?.name || '적'
+  });
 
   ui.hand.innerHTML = '';
   game.player.hand.forEach((card, idx) => {
