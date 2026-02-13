@@ -49,7 +49,7 @@ assert.equal(game.player.hp, 53, 'C033 should amplify same-turn healing by +2');
 resetPlayerTurnState(['C034']);
 engine.playCardAt(0);
 assert.equal(game.player.energy, 10, 'C034 should spend hp instead of energy');
-assert.equal(game.player.hp, 40, 'C034 should pay hp and then drain hp');
+assert.equal(game.player.hp, 49, 'C034 should pay hp and then lifesteal dealt damage on the same attack.');
 
 resetPlayerTurnState(['C035']);
 engine.playCardAt(0);
@@ -58,6 +58,6 @@ assert.equal(game.enemy.hp, 176, 'C035 should deal missing-hp based damage up to
 resetPlayerTurnState(['C036', 'C013']);
 engine.playCardAt(0);
 engine.playCardAt(0);
-assert.equal(game.player.hp, 43, 'C036 should grant flat lifesteal on attack for the turn');
+assert.equal(game.player.hp, 52, 'C036 should lifesteal exact dealt damage on each attack for the turn.');
 
 console.log('PASS: void-vamp-concepts');
