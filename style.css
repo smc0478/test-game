@@ -348,3 +348,14 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
     min-width: 170px;
   }
 }
+
+.battle-stage-fallback {
+  min-height: 330px;
+  padding: 20px;
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  background: radial-gradient(circle at 50% -10%, #1d3568, #091228 58%);
+}
+.battle-stage-fallback h3,
+.battle-stage-fallback p { margin: 0; }
