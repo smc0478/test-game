@@ -17,7 +17,9 @@ const effectText = (effect) => {
     echoAttack: `동명 공명 +${effect.value}`,
     swapIntent: '적 의도 전환',
     convertBlockToDamage: '내 방어도 전량을 피해로 전환',
-    discover: `도감에서 후보 ${effect.value}장 제시`
+    discover: `도감에서 후보 ${effect.value}장 제시`,
+    rewind: '직전 사용 카드 효과 재발동',
+    gamble: '무작위 결과 1개 발동'
   };
   if (effect.kind === 'ifLastTurnFamily') return `전 턴 ${effect.family}: ${effect.then.map(effectText).join(' + ')}`;
   if (effect.kind === 'ifEnemyIntent') return `적 의도(${effect.intent})일 때: ${effect.then.map(effectText).join(' + ')}`;
@@ -61,8 +63,9 @@ export function createUiBindings() {
     rewardCards: document.querySelector('#reward-cards'),
     skipRewardBtn: document.querySelector('#skip-reward-btn'),
     finishDeckBuildBtn: document.querySelector('#finish-deck-build-btn'),
+    openCodexBtn: document.querySelector('#open-codex-btn'),
     removeDeckCards: document.querySelector('#remove-deck-cards'),
-    codexCards: document.querySelector('#codex-cards'),
+    playedCards: document.querySelector('#played-cards'),
     discoverPanel: document.querySelector('#discover-panel'),
     discoverCards: document.querySelector('#discover-cards'),
     log: document.querySelector('#log')
@@ -147,13 +150,23 @@ export function render(ui, game, actions) {
     ui.finishDeckBuildBtn.disabled = !game.rewardAccepted;
   }
 
-  ui.codexCards.innerHTML = '';
-  Object.values(CARD_LIBRARY).forEach((card) => {
-    const node = document.createElement('article');
-    node.className = 'card mini';
-    node.innerHTML = cardTemplate(card);
-    ui.codexCards.appendChild(node);
-  });
+
+
+  ui.playedCards.innerHTML = '';
+  if (!game.playedCardsHistory.length) {
+    const empty = document.createElement('div');
+    empty.className = 'history-item';
+    empty.textContent = '아직 사용한 카드가 없습니다.';
+    ui.playedCards.appendChild(empty);
+  } else {
+    game.playedCardsHistory.forEach((history, index) => {
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      item.textContent = `${index + 1}. ${history.name} (${history.id})`;
+      ui.playedCards.appendChild(item);
+    });
+  }
+
 
   const discovering = game.discoverChoices.length > 0;
   ui.discoverPanel.classList.toggle('hidden', !discovering);

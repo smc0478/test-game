@@ -12,5 +12,6 @@ ui.startBtn.addEventListener('click', () => engine.startRun());
 ui.endTurnBtn.addEventListener('click', () => engine.endPlayerTurn());
 ui.skipRewardBtn.addEventListener('click', () => engine.skipReward());
 ui.finishDeckBuildBtn.addEventListener('click', () => engine.finishDeckBuild());
+ui.openCodexBtn.addEventListener('click', () => window.open('./codex.html', '_blank'));
 
 render(ui, game, engine);

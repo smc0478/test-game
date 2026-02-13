@@ -111,3 +111,18 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .log-line.good { border-left: 3px solid #22c55e; }
 
 .hidden { display: none; }
+
+
+.history-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.history-item {
+  background: #0b1220;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.84rem;
+}

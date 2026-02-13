@@ -3,19 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>시너지 턴 카드 배틀 v0.7</title>
+  <title>시너지 턴 카드 배틀 v0.8</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="app">
     <header class="top-bar">
       <div>
-        <h1>시너지 턴 카드 배틀 v0.7</h1>
-        <p class="subtitle">의도 대응 + 카드 도감 + 덱 정리 루프를 포함한 러닝 모드</p>
+        <h1>시너지 턴 카드 배틀 v0.8</h1>
+        <p class="subtitle">의도 대응 + 카드 추적 + 별도 도감 페이지를 포함한 러닝 모드</p>
       </div>
       <div class="controls">
         <button id="start-btn">런 시작</button>
         <button id="end-turn-btn" disabled>턴 종료</button>
+        <button id="open-codex-btn" type="button">도감 페이지</button>
       </div>
     </header>
 
@@ -77,9 +78,9 @@
     </section>
 
     <section class="panel">
-      <h2>카드 도감</h2>
-      <p class="small">게임에 등장하는 전체 카드를 확인할 수 있습니다.</p>
-      <div id="codex-cards" class="hand"></div>
+      <h2>내가 사용한 카드</h2>
+      <p class="small">최근에 사용한 카드 12장을 순서대로 보여줍니다.</p>
+      <div id="played-cards" class="history-list"></div>
     </section>
 
     <section class="panel">
