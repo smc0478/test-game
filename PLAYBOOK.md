@@ -207,6 +207,11 @@ fix/synergy-multiplier-error
 - 시스템 구조 변경
 - 카드 추가
 - 상태 머신 변경
+- 카드/적/지역 데이터 변경
+
+도감 동기화 필수 규칙:
+- 카드(`CARD_LIBRARY`) 또는 적(`ENEMY_ARCHETYPES`, `ENEMY_BESTIARY`)이 변경되면 같은 작업에서 `codex.html`, `codex.js` 렌더 결과를 반드시 확인하고 필요 시 문구/섹션을 즉시 업데이트한다.
+- PR 본문의 Changes 또는 Spec Mapping에 "도감 동기화" 항목을 필수로 기록한다.
 
 CHANGELOG.md는 반드시 버전 단위로 기록한다.
 
