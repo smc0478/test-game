@@ -1,3 +1,14 @@
+## v1.7.0
+### Added
+- Phaser 3 기반 `BootScene`, `BattleScene`를 추가해 배틀 스테이지를 Scene 구조로 전환.
+- 전투 코어를 `src/core/battleCore.js`로 분리해 DOM/렌더링 의존성을 제거.
+
+### Changed
+- 기존 수동 Canvas 드로잉을 제거하고 Phaser 렌더링으로 교체.
+- 전장 배치를 플레이어 좌측 / 적 우측으로 교체.
+- hover 정보 패널을 Phaser 인터랙션과 연동.
+- 오버레이 입력 정책을 `pointer-events` 기준으로 정리.
+
 ## v1.6.0
 ### Added
 - 전투 화면을 실전형 레이아웃으로 재정렬(상단 전장, 중단 스탯 3열, 하단 손패 중심 구성).

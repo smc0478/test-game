@@ -1,24 +1,23 @@
-# ARCHITECTURE.md (v1.2)
+# ARCHITECTURE.md (v1.7)
 
 ## 모듈 구성
-- `src/data.js`: 카드/적/지역/경로 테이블 데이터.
-- `src/gameEngine.js`: 상태 머신, 분기 선택, 전투/보상/라운드 전이, 저장/복원 트리거.
-- `src/storage.js`: localStorage 기반 런 스냅샷 및 명예의 전당 기록 관리.
-- `src/ui.js`: 전투/보상/분기 UI 렌더링 + 시너지 설명 패널.
-- `game.js`: 엔진과 UI 이벤트 연결.
-- `hall.js`: 명예의 전당 페이지 렌더링.
+- `src/core/battleCore.js`: 상태 머신(`ready/planning/playerTurn/enemyTurn/resolution/gameOver` 포함), 카드 효과 계산, 적 AI, 라운드 전이.
+- `src/phaserBattle.js`: Phaser `BootScene` → `BattleScene` 전환, 전투 스테이지 렌더, hover 상호작용.
+- `src/ui.js`: DOM 카드/보상/로그/시너지 렌더 + hover 정보 패널 표시.
+- `game.js`: core 상태를 scene과 dom에 동기화하는 엔트리.
+- `src/storage.js`: localStorage 기반 런 저장/복원.
 
-## 상태 머신
-`ready -> planning -> playerTurn -> enemyTurn -> resolution -> deckBuild -> routeSelect -> (next round)`
+## 렌더링 계층
+1. Phaser 캔버스 (`#game-root`)
+2. DOM 오버레이 (`.battle-overlay`, pointer-events: none)
+3. 클릭 가능한 덱 정비 패널 (`.canvas-deckbuild-overlay`, pointer-events: auto)
 
-## 저장/명예의 전당
-- 진행 중 상태는 액션 단위로 localStorage에 저장.
-- `gameOver`/`runComplete` 시 런 스냅샷은 삭제하고 결과를 명예의 전당에 기록.
-- 명예의 전당은 최근 30회 결과를 유지.
+## 입력 계층
+- 전투체(플레이어/적) hover: Phaser `setInteractive()`로 처리.
+- 카드/보상/경로/버튼 클릭: DOM 이벤트로 처리.
+- 패널 레이어는 기본 클릭 차단(`pointer-events: none`)으로 캔버스 입력을 방해하지 않음.
 
-
-## Enemy Scaling & Multi-Action Flow (v1.3)
-- 라운드 인덱스를 기반으로 `threatLevel`을 계산한다.
-- `beginTurn(enemy)`에서 에너지/드로우 보너스를 반영한다.
-- `enemyTurn()`은 최대 행동 수(기본 1 + 보너스)를 루프로 실행하며, 매 행동마다 `chooseEnemyCard()`를 재호출한다.
-- 루프 중 사망 판정이 발생하면 즉시 `resolution`으로 전이한다.
+## 상태 동기화
+- `createEngine(...onRender)`가 호출될 때마다
+  - `render(ui, game, engine)`로 DOM 갱신
+  - `battleScene.render(createBattleSnapshot(game))`로 Phaser Scene 갱신

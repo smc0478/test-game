@@ -1,14 +1,14 @@
 # GAME_SPEC.md
 
 ## Spec Version
-- **Version:** v1.6.0
+- **Version:** v1.7.0
 - **Project:** Synergy Turn Card Battle
 - **Owner Role:** Producer (Game Designer)
 - **Language:** Korean
 - **Last Updated:** 2026-02-13
 
 ## 1) Design Goal
-v1.6.0은 **실전형 전투 화면 레이아웃**과 **시너지/적 스케일링 밸런스 리빌드**를 동시에 적용한다.
+v1.7.0은 **Phaser 3 기반 배틀 스테이지 이관**과 **DOM 하이브리드 UI 입력 레이어 정리**를 적용한다.
 
 핵심 목표:
 - 플레이어가 한 화면에서 전장/스탯/행동 버튼/손패를 즉시 인지한다.
@@ -16,7 +16,7 @@ v1.6.0은 **실전형 전투 화면 레이아웃**과 **시너지/적 스케일�
 
 ## 2) Scope
 
-### Scope In (v1.6.0)
+### Scope In (v1.7.0)
 - 상태 머신 유지:
   - `ready`
   - `planning`
@@ -29,6 +29,15 @@ v1.6.0은 **실전형 전투 화면 레이아웃**과 **시너지/적 스케일�
   - `runComplete`
 - 전투 UI 재구성:
   - 상단: 배틀 스테이지 캔버스 + VS 오버레이 + 전장 초상 카드.
+- 전투 엔진 분리 구조:
+  - `src/core/battleCore.js`에서 상태 머신/전투 로직/AI를 관리.
+  - `src/phaserBattle.js`에서 BootScene/BattleScene 렌더링을 담당.
+  - DOM 카드는 유지하고 전장 렌더는 Phaser Scene으로 대체.
+- 배틀 스테이지에서 플레이어/적 위치를 교체(플레이어 좌측, 적 우측).
+- Phaser 인터랙션 기반 hover 툴팁 표시(플레이어/적 정보 패널).
+- 오버레이 입력 정책 명확화:
+  - 배틀 오버레이 패널은 `pointer-events: none`
+  - 클릭 가능한 보상/카드 제거 패널만 `pointer-events: auto`
   - 중단: 플레이어/적/런 정보 스탯 패널 3열 구성.
   - 하단: 전투 조작 + 시너지 안내 + 손패 카드 영역.
 - 카드 이미지는 모든 카드에 필수 제공(`image`).
@@ -41,6 +50,7 @@ v1.6.0은 **실전형 전투 화면 레이아웃**과 **시너지/적 스케일�
 - 영구 메타 성장.
 - 카드 업그레이드 단계.
 - 실시간 물리 엔진 기반 애니메이션.
+- Phaser 외 엔진(Pixi/Unity) 전환.
 
 ## 3) Core Battle Rules
 - 플레이어 HP: **78**
@@ -115,6 +125,12 @@ v1.6.0은 **실전형 전투 화면 레이아웃**과 **시너지/적 스케일�
 - `src/storage.js`
 
 ## Change Log
+
+### v1.7.0 (2026-02-13)
+- 배틀 스테이지 렌더링을 Canvas 수동 루프에서 Phaser Scene(BootScene/BattleScene) 구조로 전환했다.
+- 전투 코어를 `src/core/battleCore.js`로 분리하고, UI 렌더와 로직 의존을 분리했다.
+- 플레이어/적 위치를 교체하고 Phaser 상호작용 hover 패널로 전장 정보 접근성을 높였다.
+- DOM 하이브리드 구조를 유지하면서 오버레이 입력 정책(pointer-events)을 정리했다.
 
 ### v1.6.0 (2026-02-13)
 - 전투 화면을 실전형 레이아웃(상단 전장 / 중단 스탯 / 하단 손패)으로 재정렬했다.
