@@ -28,3 +28,14 @@
 | BUG-STALE-CLICK-ENERGY | `tests/bugs/stale-index-double-play-energy.test.mjs` | `node tests/bugs/stale-index-double-play-energy.test.mjs` | PASS | 수정 전 FAIL(에너지 1), 수정 후 PASS(에너지 2)로 중복 클릭 회귀 확인 |
 | BUG-PLAYER-ENERGY-CAP | `tests/bugs/player-energy-cap.test.mjs` | `node tests/bugs/player-energy-cap.test.mjs` | PASS | 다음 턴 에너지 보너스가 있어도 플레이어 에너지가 3을 초과하지 않는지 검증 |
 
+
+## 신규 버그/이슈 탐지 (2026-02-13)
+
+| Bug ID | Area | Repro Command | Result | Observation |
+|---|---|---|---|---|
+| BUG-LEAF-RETAIN-TEST | 리프 컨셉 테스트 | `node tests/leaf-concepts.test.mjs` | FAIL | `retained block should stay on the next player turn` 검증에서 기대값 18, 실제 10으로 실패. 적 턴에서 방어도가 소모되는 케이스가 테스트 가정과 불일치 가능성 있음. |
+| BUG-VOID-BLOOD-PACT-TEST | 보이드 흡혈 컨셉 테스트 | `node tests/void-vamp-concepts.test.mjs` | FAIL | `C034 should spend hp instead of energy` 검증에서 기대값 10, 실제 3으로 실패. 현재 엔진의 플레이어 에너지 상한(3) 로직과 테스트 가정(10)이 충돌하는지 확인 필요. |
+
+### QA 메모
+- 위 2건은 테스트 실패를 통해 재현됨.
+- 우선순위: 테스트 스펙 정합성 확인(현재 GAME_SPEC 및 엔진 상한 규칙과 기대값 비교) 후, 실제 버그인지 테스트 오탐인지 분류 필요.
