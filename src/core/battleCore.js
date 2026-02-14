@@ -379,6 +379,10 @@ export function createEngine(game, hooks) {
       ].filter(Boolean).join(', ');
       log(`${source.name} 공격 ${dealt} (계산: ${formula})`);
       if (source.activeSynergies.Void) restoreHp(source, 1);
+      if (target.thorns > 0 && source !== target) {
+        const thornDamage = applyDamage(source, target.thorns);
+        log(`${target.name} 가시 반격 ${thornDamage}`);
+      }
       if (source.attackLifestealFromDamage && dealt > 0) {
         const healed = restoreHp(source, dealt);
         if (healed > 0) log(`${source.name} 공격 흡혈 ${healed}`);
