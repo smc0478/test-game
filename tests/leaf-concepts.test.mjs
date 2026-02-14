@@ -55,6 +55,8 @@ engine.playCardAt(0);
 assert.equal(game.player.blockRetainTurns, 2, 'C026 should set block retain for 2 turns');
 assert.equal(game.player.block, 18, 'C026 should grant 18 block');
 game.enemy.hand = [];
+game.enemy.drawPile = [];
+game.enemy.discardPile = [];
 game.enemy.energy = 0;
 engine.endPlayerTurn();
 assert.equal(game.player.block, 18, 'retained block should stay on the next player turn');
