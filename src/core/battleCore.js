@@ -292,6 +292,7 @@ export function createEngine(game, hooks) {
   };
 
   const updateSynergy = (actor, card) => {
+    const energyBeforeSynergy = actor.energy;
     actor.sigilCounts[card.sigil] += 1;
     actor.turnFamiliesUsed.add(card.family);
     actor.turnFamilyCounts[card.family] = (actor.turnFamilyCounts[card.family] || 0) + 1;
@@ -343,7 +344,7 @@ export function createEngine(game, hooks) {
       }
       game.score += 15;
     }
-    clampPlayerEnergy(actor);
+    if (actor.energy > energyBeforeSynergy) clampPlayerEnergy(actor);
   };
 
   const applyEffect = (source, target, effect, card, context = { fromRewind: false }) => {
