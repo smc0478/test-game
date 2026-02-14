@@ -263,12 +263,16 @@ export function createEngine(game, hooks) {
   const removeCardEverywhere = (cardId, { skipDeck = false } = {}) => {
     const removeOnce = (pile) => {
       const index = pile.findIndex((idOrCard) => (typeof idOrCard === 'string' ? idOrCard : idOrCard.id) === cardId);
-      if (index >= 0) pile.splice(index, 1);
+      if (index < 0) return false;
+      pile.splice(index, 1);
+      return true;
     };
     if (!skipDeck) removeOnce(game.deck);
-    removeOnce(game.player.drawPile);
-    removeOnce(game.player.discardPile);
-    removeOnce(game.player.hand);
+
+    const battlePiles = [game.player.drawPile, game.player.discardPile, game.player.hand];
+    for (const pile of battlePiles) {
+      if (removeOnce(pile)) break;
+    }
   };
 
 
