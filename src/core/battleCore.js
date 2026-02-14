@@ -580,6 +580,7 @@ export function createEngine(game, hooks) {
     let energy = game.enemy.energy;
     let intentType = game.enemy.intentType;
     let lastPlayedCardId = game.enemy.lastPlayedCardId;
+    let simulatedHp = game.enemy.hp;
     let totalDamage = 0;
     const sequence = [];
     let simulatedFirst = false;
@@ -587,13 +588,14 @@ export function createEngine(game, hooks) {
     while (true) {
       const selected = !simulatedFirst && firstCard
         ? firstCard
-        : selectEnemyCard({ hand, energy, intentType, lastPlayedCardId, hp: game.enemy.hp });
+        : selectEnemyCard({ hand, energy, intentType, lastPlayedCardId, hp: simulatedHp });
       simulatedFirst = true;
       if (!selected) break;
 
       const index = hand.findIndex((c) => c.id === selected.id);
       if (index < 0) break;
       energy -= selected.energyCost;
+      simulatedHp -= getHpCost(selected);
       hand.splice(index, 1);
       intentType = selected.type === 'attack' ? 'attack' : 'skill';
       lastPlayedCardId = selected.id;
